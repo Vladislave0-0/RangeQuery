@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-namespace ARB_Tree {
+namespace RB_Tree {
 enum class Color { red, black };
 
 template <typename KeyTy> struct Node {

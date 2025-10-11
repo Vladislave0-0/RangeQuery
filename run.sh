@@ -5,5 +5,5 @@ set -eo pipefail
 
 cmake --build build/
 ./build/tree
-rm -f expression.png
-dot expression.dot -Tpng -o expression.png
+rm -f ./output/expression.png
+dot ./output/expression.dot -Tpng -o ./output/expression.png

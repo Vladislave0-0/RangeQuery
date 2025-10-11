@@ -1,6 +1,6 @@
-#include <iostream>
-#include "../include/tree.hpp"
 #include "../include/dump.hpp"
+#include "../include/tree.hpp"
+#include <iostream>
 
 using KeyTy = int;
 
@@ -10,24 +10,21 @@ int main() {
   // int first = 0;
   // int second = 0;
 
-  ARB_Tree::Tree<KeyTy> tree;
-  // tree.root = new Node<KeyTy>;
-  // tree.root->key = 10;
+  RB_Tree::Tree<KeyTy> tree;
 
-  // tree.root->left = new Node<KeyTy>;
-  // tree.root->right = new Node<KeyTy>;
-
-  // tree.root->left->key = 5;
-  // tree.root->right->key = 15;
-
-  
   tree.insert(9);
   tree.insert(-1);
-  tree.insert(14);
   tree.insert(60);
+  tree.insert(14);
   tree.insert(1000);
+  tree.insert(7);
+  tree.insert(1500);
+  tree.insert(-9);
+  tree.insert(8);
+  tree.insert(164);
+  tree.insert(512);
 
-  make_graph("expression.dot", tree.root);
+  make_graph("./output/expression.dot", tree.root);
 
   // while (true) {
   //   std::cin >> command;

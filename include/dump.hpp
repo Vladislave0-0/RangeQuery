@@ -15,9 +15,11 @@ std::string WHT = "\x1B[37m";
 std::string RST = "\x1B[0m";
 }; // namespace
 
-using namespace ARB_Tree;
+using namespace RB_Tree;
 
 template <typename KeyTy> void dump_tree(std::ostream &os, Node<KeyTy> *node) {
+  static size_t null_nodes = 0;
+
   std::string node_color = node->color == Color::black ? "black" : "red";
   std::string line_color = node->color == Color::black ? "red" : "black";
   std::string fontcolor = node->color == Color::black ? "white" : "black";
@@ -31,12 +33,28 @@ template <typename KeyTy> void dump_tree(std::ostream &os, Node<KeyTy> *node) {
   if (node->left) {
     os << "\tnode_" << node << ":<f2>:s -> node_" << node->left << ":<f1>:n;\n";
     dump_tree(os, node->left);
+  } else {
+    os << "\tnode_" << node << ":<f2>:s -> node_" << null_nodes << ":<f1>:n;\n";
+
+    os << "\tnode_" << null_nodes
+       << " [color = red, style = \"filled\", fillcolor = black, shape = "
+          "Mrecord, fontcolor = white, label =  \"{<f1> NULL}\"];\n";
+
+    ++null_nodes;
   }
 
   if (node->right) {
     os << "\tnode_" << node << ":<f3>:s -> node_" << node->right
        << ":<f1>:n;\n";
     dump_tree(os, node->right);
+  } else {
+    os << "\tnode_" << node << ":<f3>:s -> node_" << null_nodes << ":<f1>:n;\n";
+
+    os << "\tnode_" << null_nodes
+       << " [color = red, style = \"filled\", fillcolor = black, shape = "
+          "Mrecord, fontcolor = white, label =  \"{<f1> NULL}\"];\n";
+
+    ++null_nodes;
   }
 
   //   if (node->left)
