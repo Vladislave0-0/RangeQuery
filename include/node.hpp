@@ -29,13 +29,13 @@ template <typename KeyTy> bool is_left_child(KeyTy *node) noexcept {
   return node && node->parent && node->parent->left == node;
 }
 
-template <typename KeyTy> KeyTy *minimum(KeyTy *node) noexcept {
+template <typename KeyTy> KeyTy *minNode(KeyTy *node) noexcept {
   while (node && node->left)
     node = node->left;
   return node;
 }
 
-template <typename KeyTy> KeyTy *maximum(KeyTy *node) noexcept {
+template <typename KeyTy> KeyTy *maxNode(KeyTy *node) noexcept {
   while (node && node->right)
     node = node->right;
   return node;
@@ -46,7 +46,7 @@ template <typename KeyTy> KeyTy *successor(KeyTy *node) noexcept {
     return nullptr;
 
   if (node->right)
-    return minimum(node->right);
+    return minNode(node->right);
 
   auto current = node;
   auto parent = current->parent;
@@ -63,7 +63,7 @@ template <typename KeyTy> KeyTy *predecessor(KeyTy *node) noexcept {
     return nullptr;
 
   if (node->left)
-    return maximum(node->left);
+    return maxNode(node->left);
 
   auto current = node;
   auto parent = current->parent;
@@ -75,4 +75,4 @@ template <typename KeyTy> KeyTy *predecessor(KeyTy *node) noexcept {
   return parent;
 }
 
-} // namespace Tree
+} // namespace RB_Tree

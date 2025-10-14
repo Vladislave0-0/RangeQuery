@@ -122,14 +122,14 @@ TEST(RB_Tree, EndPointerConsistency) {
   tree.insert(3);
   tree.insert(7);
   
-  EXPECT_NE(tree.end.left, nullptr);
-  EXPECT_EQ(tree.end.left->key, 7);
+  EXPECT_NE(tree.end_.left, nullptr);
+  EXPECT_EQ(tree.end_.left->key, 7);
   
   tree.insert(10);
-  EXPECT_EQ(tree.end.left->key, 10);
+  EXPECT_EQ(tree.end_.left->key, 10);
   
   tree.insert(8);
-  EXPECT_EQ(tree.end.left->key, 10);
+  EXPECT_EQ(tree.end_.left->key, 10);
 
   EXPECT_TRUE(tree.verify());
 }

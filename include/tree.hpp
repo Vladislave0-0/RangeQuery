@@ -1,23 +1,25 @@
 #pragma once
 
 #include "node.hpp"
+#include <cstddef>
 #include <iterator>
 
 namespace RB_Tree {
-template <typename KeyTy> struct Tree {
-  Node<KeyTy> end;
+template <typename KeyTy = int, class Comparator = std::greater<KeyTy>>
+struct Tree {
+  Node<KeyTy> end_;
 
   Node<KeyTy> *root = nullptr;
 
   Tree() {
-    end.color = Color::black;
-    end.subtree_size = 0;
+    end_.color = Color::black;
+    end_.subtree_size = 0;
   };
 
   void insert(const KeyTy &key) {
     if (!root) {
-      root = new Node<KeyTy>(key, &end);
-      end.left = root;
+      root = new Node<KeyTy>(key, &end_);
+      end_.left = root;
       root->color = Color::black;
       root->subtree_size = 1;
       return;
@@ -47,7 +49,7 @@ template <typename KeyTy> struct Tree {
 
     // Обновляем размеры вверх (до end)
     auto temp = new_node ? new_node->parent : parent;
-    while (temp && temp != &end) {
+    while (temp && temp != &end_) {
       ++temp->subtree_size;
       temp = temp->parent;
     }
@@ -58,14 +60,14 @@ template <typename KeyTy> struct Tree {
     }
 
     // Обновляем корень
-    while (root->parent != &end) {
+    while (root->parent != &end_) {
       root = root->parent;
     }
 
     // Обновляем максимальный элемент
-    end.left = root;
-    while (end.left && end.left->right) {
-      end.left = end.left->right;
+    end_.left = root;
+    while (end_.left && end_.left->right) {
+      end_.left = end_.left->right;
     }
   }
 
@@ -151,7 +153,7 @@ template <typename KeyTy> struct Tree {
 
     right_child->parent = node->parent;
 
-    if (node->parent == &end) {
+    if (node->parent == &end_) {
       root = right_child;
     } else if (node == node->parent->left) {
       node->parent->left = right_child;
@@ -178,7 +180,7 @@ template <typename KeyTy> struct Tree {
 
     left_child->parent = node->parent;
 
-    if (node->parent == &end) {
+    if (node->parent == &end_) {
       root = left_child;
     } else if (node == node->parent->right) {
       node->parent->right = left_child;
@@ -202,6 +204,20 @@ template <typename KeyTy> struct Tree {
         1 + recalculateSize(node->left) + recalculateSize(node->right);
     return node->subtree_size;
   }
+
+  // Node<KeyTy> *minNode(Node<KeyTy> *node) const {
+  //   while (node && node->left)
+  //     node = node->left;
+
+  //   return node;
+  // }
+
+  // Node<KeyTy> *maxNode(Node<KeyTy> *node) const {
+  //   while (node && node->right)
+  //     node = node->right;
+
+  //   return node;
+  // }
 
   bool verify() const {
     if (!root) {
@@ -234,7 +250,7 @@ template <typename KeyTy> struct Tree {
     }
 
     // Проверка корректности parent связей
-    if (!checkParentLinks(root, &end)) {
+    if (!checkParentLinks(root, &end_)) {
       std::cerr << "Violation: Parent links are incorrect" << std::endl;
       return false;
     }
@@ -254,7 +270,6 @@ template <typename KeyTy> struct Tree {
     return true;
   }
 
-private:
   bool checkRedProperty(Node<KeyTy> *node) const {
     if (!node)
       return true;
@@ -354,7 +369,7 @@ private:
 
   bool checkEndPointer() const {
     if (!root) {
-      return end.left == nullptr;
+      return end_.left == nullptr;
     }
 
     Node<KeyTy> *max_node = root;
@@ -362,13 +377,114 @@ private:
       max_node = max_node->right;
     }
 
-    if (end.left != max_node) {
+    if (end_.left != max_node) {
       std::cerr << "End pointer violation: expected " << max_node->key
-                << ", got " << (end.left ? end.left->key : -1) << std::endl;
+                << ", got " << (end_.left ? end_.left->key : -1) << std::endl;
       return false;
     }
 
     return true;
+  }
+
+  struct Iterator {
+    friend struct Tree;
+
+    Node<KeyTy> *ptr = nullptr;
+
+    // using iterator_category = std::bidirectional_iterator_tag;
+    // using value_type = KeyTy;
+    // using difference_type = std::ptrdiff_t;
+    // using pointer = const KeyTy*;
+    // using reference = const KeyTy&;
+
+    explicit Iterator(Node<KeyTy> *p) : ptr(p) {}
+
+    const KeyTy &operator*() const { return ptr->key; }
+    const KeyTy *operator->() const { return &ptr->key; }
+
+    bool operator==(const Iterator &other) const { return ptr == other.ptr; }
+    bool operator!=(const Iterator &other) const { return ptr != other.ptr; }
+
+    Iterator &operator++() {
+      ptr = RB_Tree::successor(ptr);
+      return *this;
+    }
+
+    Iterator operator++(int) {
+      Iterator tmp = *this;
+      ++(*this);
+      return tmp;
+    }
+
+    Iterator &operator--() {
+      if (!ptr)
+        return *this;
+
+      if (ptr->subtree_size == 0) {
+        ptr = ptr->left;
+      } else {
+        ptr = RB_Tree::predecessor(ptr);
+      }
+
+      return *this;
+    }
+
+    Iterator operator--(int) {
+      Iterator tmp = *this;
+      --(*this);
+      return tmp;
+    }
+  };
+
+  Iterator begin() const {
+    if (!root)
+      return end();
+    return Iterator(RB_Tree::minNode(root));
+  }
+
+  Iterator end() const { return Iterator(const_cast<Node<KeyTy> *>(&end_)); }
+
+  Iterator lowerBound(const KeyTy &key) {
+    Node<KeyTy> *current = root;
+    Node<KeyTy> *candidate = &end_;
+
+    while (current) {
+      if (current->key >= key) {
+        candidate = current;
+        current = current->left;
+      } else {
+        current = current->right;
+      }
+    }
+
+    return Iterator(candidate);
+  }
+
+  Iterator upperBound(const KeyTy &key) {
+    Node<KeyTy> *current = root;
+    Node<KeyTy> *candidate = &end_;
+
+    while (current) {
+      if (current->key < key) {
+        candidate = current;
+        current = current->left;
+      } else {
+        current = current->right;
+      }
+    }
+
+    return Iterator(candidate);
+  }
+
+  std::size_t distance(Iterator first, Iterator second) {
+    std::size_t distance = 0;
+
+    while(first != second) {
+      ++distance;
+      ++first;
+    }
+
+    return distance;
   }
 };
 
