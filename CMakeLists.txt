@@ -33,13 +33,6 @@ target_link_libraries(google_test PRIVATE GTest::gtest_main)
 
 gtest_discover_tests(google_test TEST_PREFIX gtest_)
 
-# add_test(
-#     NAME end2end_tests
-#     COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/end2end/run_e2e.sh 
-#         -b $<TARGET_FILE:tree>
-#     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/end2end
-# )
-
 add_custom_target(run_all_tests
     COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
     DEPENDS google_test

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <fstream>
+#include <iostream>
 
 #include "node.hpp"
 
@@ -17,7 +18,7 @@ std::string RST = "\x1B[0m";
 
 using namespace RB_Tree;
 
-template <typename KeyTy> void dump_tree(std::ostream &os, Node<KeyTy> *node) {
+template <typename KeyTy> void dumpTree(std::ostream &os, Node<KeyTy> *node) {
   static size_t null_nodes = 0;
 
   std::string node_color = node->color == Color::black ? "black" : "red";
@@ -32,7 +33,7 @@ template <typename KeyTy> void dump_tree(std::ostream &os, Node<KeyTy> *node) {
 
   if (node->left) {
     os << "\tnode_" << node << ":<f2>:s -> node_" << node->left << ":<f1>:n;\n";
-    dump_tree(os, node->left);
+    dumpTree(os, node->left);
   } else {
     os << "\tnode_" << node << ":<f2>:s -> node_" << null_nodes << ":<f1>:n;\n";
 
@@ -46,7 +47,7 @@ template <typename KeyTy> void dump_tree(std::ostream &os, Node<KeyTy> *node) {
   if (node->right) {
     os << "\tnode_" << node << ":<f3>:s -> node_" << node->right
        << ":<f1>:n;\n";
-    dump_tree(os, node->right);
+    dumpTree(os, node->right);
   } else {
     os << "\tnode_" << node << ":<f3>:s -> node_" << null_nodes << ":<f1>:n;\n";
 
@@ -56,16 +57,10 @@ template <typename KeyTy> void dump_tree(std::ostream &os, Node<KeyTy> *node) {
 
     ++null_nodes;
   }
-
-  //   if (node->left)
-  //     dump_tree(os, node->left);
-
-  //   if (node->right)
-  //     dump_tree(os, node->right);
 }
 
 template <typename KeyTy>
-void make_graph(const std::string &filename, Node<KeyTy> *node) {
+void makeGraph(const std::string &filename, Node<KeyTy> *node) {
   if (node == nullptr) {
     std::cout << RED << "Failed to make dump of the tree. Root is nullptr.\n"
               << RST;
@@ -84,7 +79,7 @@ void make_graph(const std::string &filename, Node<KeyTy> *node) {
   file << "\tsplines = false;\n\n";
 
   if (node) {
-    dump_tree(file, node);
+    dumpTree(file, node);
   }
   file << "}\n";
 }
