@@ -1,75 +1,76 @@
-#include "../include/dump.hpp"
 #include "../include/tree.hpp"
 
+using namespace RB_Tree;
+
+#define TIME
+#ifdef TIME
+#include <chrono>
+#endif // TIME
+
+// #define GPAPHVIZ_DUMP
+#ifdef GPAPHVIZ_DUMP
+#include "../include/dump.hpp"
+#include <string>
+#endif // GPAPHVIZ_DUMP
+
 int main() {
+  using KeyTy = int;
 
-  // char command = 0;
-  // int first = 0;
-  // int second = 0;
+  char command = 0;
+  int first = 0, second = 0;
 
-  RB_Tree::Tree<int> tree;
+  RB_Tree::Tree<KeyTy> tree;
 
-  tree.insert(9);
-  tree.insert(-1);
-  tree.insert(60);
-  tree.insert(14);
-  tree.insert(1000);
-  tree.insert(7);
-  tree.insert(1500);
-  tree.insert(-9);
-  tree.insert(8);
-  tree.insert(164);
-  tree.insert(512);
-  tree.insert(1);
-  tree.insert(3);
-  tree.insert(5);
-  tree.insert(7);
-  tree.insert(9);
+#ifdef TIME
+  auto begin = std::chrono::steady_clock::now();
+#endif // TIME
 
-  for (int i = 0; i < 100; ++i) {
-    tree.insert(i);
+  while (true) {
+    std::cin >> command;
+
+    switch (command) {
+    case 'k': {
+      std::cin >> first;
+      tree.insert(first);
+
+#ifdef GPAPHVIZ_DUMP
+      static int dot_num = 1;
+      std::string filename =
+          "./output/after_insert_" + std::to_string(dot_num++) + ".dot";
+      makeGraph(filename, tree.get_root());
+#endif // GPAPHVIZ_DUMP
+
+      command = 0;
+      break;
+    }
+
+    case 'q': {
+      std::cin >> first >> second;
+      if (first > second) {
+        std::cout << std::format("Bad input format: {} > {}\n", first, second);
+        return 0;
+      }
+
+      Tree<KeyTy>::Iterator start = tree.lowerBound(first);
+      Tree<KeyTy>::Iterator fin = tree.upperBound(second);
+
+      std::cout << tree.distance(start, fin) << " ";
+
+      command = 0;
+      break;
+    }
+
+    default: {
+#ifdef TIME
+      auto end = std::chrono::steady_clock::now();
+      auto elapsed_ms =
+          std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+      std::cout << std::format("\n\nTime: {} s\n",
+                               static_cast<float>(elapsed_ms.count()) / 1000);
+#endif // TIME
+
+      return 0;
+    }
+    }
   }
-
-  // for (auto it = tree.begin(); it != tree.end(); ++it) {
-  // std::cout << *tree.lowerBound(3) << "\n";
-  // }
-  // std::cout << "\n";
-  // for (auto it = tree.end(); it != tree.begin();) {
-  //   --it;
-  //   std::cout << *it << " ";
-  // }
-
-  makeGraph("./output/expression.dot", tree.get_root());
-
-  // while (true) {
-  //   std::cin >> command;
-  //   // std::cout << command;
-
-  //   switch (command) {
-  //   case 'k': {
-  //     std::cin >> first;
-  //     // std::cout << first << " ";
-
-  //     // tree.insert(a);
-
-  //     command = 0;
-  //     break;
-  //   }
-
-  //   case 'q': {
-  //     std::cin >> first >> second;
-  //     // std::cout << first << " " << second << " ";
-
-  //     command = 0;
-  //     break;
-  //   }
-
-  //   default: {
-  //     std::cout << command << " ";
-  //     // std::cout << "\ndefault\n";
-
-  //     return 0;
-  //   }
-  //   }
-  // }
 }

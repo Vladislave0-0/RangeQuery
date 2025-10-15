@@ -73,5 +73,4 @@ template <typename KeyTy> Node<KeyTy> *predecessor(Node<KeyTy> *node) {
 
   return parent;
 }
-
 } // namespace RB_Tree

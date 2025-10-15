@@ -40,7 +40,10 @@ private:
   bool checkSubtreeSizes(Node<KeyTy> *node) const;
   bool checkEndPointer() const;
 
+public:
   struct Iterator {
+    Node<KeyTy> *ptr = nullptr;
+
     Iterator(Node<KeyTy> *p) : ptr(p) {}
 
     const KeyTy &operator*() const { return ptr->key; }
@@ -65,12 +68,8 @@ private:
 
       return *this;
     }
-
-  private:
-    Node<KeyTy> *ptr = nullptr;
   };
 
-public:
   Iterator begin() const {
     if (!root_)
       return end();
@@ -112,15 +111,38 @@ public:
     return Iterator(candidate);
   }
 
-  std::size_t distance(Iterator first, Iterator second) const {
-    std::size_t distance = 0;
+  size_t get_rank(Node<KeyTy> *node) const {
+    if (!node || node == &end_ || !root_)
+      return 0;
 
-    while (first != second) {
-      ++distance;
-      ++first;
+    size_t rank = (node->left ? node->left->subtree_size : 0);
+    Node<KeyTy> *current = node;
+
+    while (current != root_) {
+      if (current == current->parent->right) {
+        rank += 1 + (current->parent->left ? current->parent->left->subtree_size
+                                           : 0);
+      }
+      current = current->parent;
     }
 
-    return distance;
+    return rank;
+  }
+
+  size_t distance(Iterator first, Iterator last) const {
+    if (!root_ || first.ptr == nullptr || last.ptr == nullptr)
+      return 0;
+
+    size_t rank_first = get_rank(first.ptr);
+
+    size_t rank_last;
+    if (last.ptr == &end_) {
+      rank_last = root_->subtree_size;
+    } else {
+      rank_last = get_rank(last.ptr);
+    }
+
+    return (rank_last >= rank_first) ? (rank_last - rank_first) : 0;
   }
 };
 
@@ -487,5 +509,4 @@ template <typename KeyTy> void Tree<KeyTy>::cleanTree(Node<KeyTy> *node) {
   cleanTree(node->right);
   delete node;
 }
-
 } // namespace RB_Tree

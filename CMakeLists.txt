@@ -17,6 +17,7 @@ include_directories(include/)
 
 set(RANGE_QUERY_SOURCES
     src/main.cpp
+    # src/set.cpp
 )
 
 add_executable(tree ${RANGE_QUERY_SOURCES})

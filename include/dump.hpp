@@ -5,6 +5,8 @@
 
 #include "node.hpp"
 
+namespace RB_Tree {
+
 namespace {
 std::string RED = "\x1B[31m";
 std::string GRN = "\x1B[32m";
@@ -16,14 +18,16 @@ std::string WHT = "\x1B[37m";
 std::string RST = "\x1B[0m";
 }; // namespace
 
-using namespace RB_Tree;
-
-template <typename KeyTy> void dumpTree(std::ostream &os, Node<KeyTy> *node) {
+template <typename KeyTy>
+void dumpTree(std::ostream &os, RB_Tree::Node<KeyTy> *node) {
   static size_t null_nodes = 0;
 
-  std::string node_color = node->color == Color::black ? "black" : "red";
-  std::string line_color = node->color == Color::black ? "red" : "black";
-  std::string fontcolor = node->color == Color::black ? "white" : "black";
+  std::string node_color =
+      node->color == RB_Tree::Color::black ? "black" : "red";
+  std::string line_color =
+      node->color == RB_Tree::Color::black ? "red" : "black";
+  std::string fontcolor =
+      node->color == RB_Tree::Color::black ? "white" : "black";
 
   os << "\tnode_" << node << " [color = " << line_color
      << ", style = \"filled\", fillcolor = " << node_color
@@ -60,16 +64,20 @@ template <typename KeyTy> void dumpTree(std::ostream &os, Node<KeyTy> *node) {
 }
 
 template <typename KeyTy>
-void makeGraph(const std::string &filename, Node<KeyTy> *node) {
+void makeGraph(const std::string &filename, RB_Tree::Node<KeyTy> *node) {
   if (node == nullptr) {
-    std::cout << RED << "Failed to make dump of the tree. Root is nullptr.\n"
+    std::cout << RED
+              << "[makeGraph error] Failed to make dump of the tree. Root is "
+                 "nullptr.\n"
               << RST;
     return;
   }
 
   std::ofstream file(filename);
   if (!file.is_open()) {
-    std::cerr << RED << "Failed to open file: " << filename << std::endl << RST;
+    std::cerr << RED << "[makeGraph error] Failed to open file: " << filename
+              << std::endl
+              << RST;
     return;
   }
 
@@ -78,8 +86,9 @@ void makeGraph(const std::string &filename, Node<KeyTy> *node) {
   file << "\trankdir = TB;\n";
   file << "\tsplines = false;\n\n";
 
-  if (node) {
+  if (node)
     dumpTree(file, node);
-  }
+  
   file << "}\n";
 }
+} // namespace RB_Tree
