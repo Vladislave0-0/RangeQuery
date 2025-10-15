@@ -1,8 +1,9 @@
 #include "../include/tree.hpp"
+#include <format>
 
 using namespace RB_Tree;
 
-#define TIME
+// #define TIME
 #ifdef TIME
 #include <chrono>
 #endif // TIME
@@ -35,8 +36,8 @@ int main() {
 
 #ifdef GPAPHVIZ_DUMP
       static int dot_num = 1;
-      std::string filename =
-          "./output/after_insert_" + std::to_string(dot_num++) + ".dot";
+      std::string filename = "./graphviz_output/after_insert_" +
+                             std::to_string(dot_num++) + ".dot";
       makeGraph(filename, tree.get_root());
 #endif // GPAPHVIZ_DUMP
 
@@ -47,7 +48,8 @@ int main() {
     case 'q': {
       std::cin >> first >> second;
       if (first > second) {
-        std::cout << std::format("Bad input format: {} > {}\n", first, second);
+        std::cout << std::format("\nBad input format: {} > {}\n", first,
+                                 second);
         return 0;
       }
 
@@ -61,6 +63,8 @@ int main() {
     }
 
     default: {
+      std::cout << std::endl;
+
 #ifdef TIME
       auto end = std::chrono::steady_clock::now();
       auto elapsed_ms =

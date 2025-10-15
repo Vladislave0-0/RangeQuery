@@ -111,7 +111,7 @@ public:
     return Iterator(candidate);
   }
 
-  size_t get_rank(Node<KeyTy> *node) const {
+  size_t getRank(Node<KeyTy> *node) const {
     if (!node || node == &end_ || !root_)
       return 0;
 
@@ -133,13 +133,13 @@ public:
     if (!root_ || first.ptr == nullptr || last.ptr == nullptr)
       return 0;
 
-    size_t rank_first = get_rank(first.ptr);
+    size_t rank_first = getRank(first.ptr);
 
     size_t rank_last;
     if (last.ptr == &end_) {
       rank_last = root_->subtree_size;
     } else {
-      rank_last = get_rank(last.ptr);
+      rank_last = getRank(last.ptr);
     }
 
     return (rank_last >= rank_first) ? (rank_last - rank_first) : 0;
