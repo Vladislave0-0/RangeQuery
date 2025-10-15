@@ -369,14 +369,12 @@ private:
     return true;
   }
 
-  class Iterator {
+  struct Iterator {
     Iterator(Node<KeyTy> *p) : ptr(p) {}
-
-  private:
-    Node<KeyTy> *ptr = nullptr;
 
     const KeyTy &operator*() const { return ptr->key; }
 
+    bool operator==(const Iterator &other) const { return ptr == other.ptr; }
     bool operator!=(const Iterator &other) const { return ptr != other.ptr; }
 
     Iterator &operator++() {
@@ -396,8 +394,12 @@ private:
 
       return *this;
     }
+
+  private:
+    Node<KeyTy> *ptr = nullptr;
   };
 
+public:
   Iterator begin() const {
     if (!root_)
       return end();
@@ -428,7 +430,7 @@ private:
     Node<KeyTy> *candidate = &end_;
 
     while (current) {
-      if (current->key < key) {
+      if (key < current->key) {
         candidate = current;
         current = current->left;
       } else {

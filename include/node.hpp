@@ -7,7 +7,8 @@ enum class Color { red, black };
 
 template <typename KeyTy> class Tree;
 
-template <typename KeyTy = int> class Node {
+template <typename KeyTy = int> struct Node {
+  friend class Tree<KeyTy>;
 
   KeyTy key;
   RB_Tree::Color color = RB_Tree::Color::red;
@@ -17,19 +18,10 @@ template <typename KeyTy = int> class Node {
   Node *right = nullptr;
   Node *parent = nullptr;
 
-public:
-  friend class Tree<KeyTy>;
-
   Node(const KeyTy &k, Node *p = nullptr) : key(k), parent(p) {}
   Node() = default;
 
   std::size_t size(Node *node) const { return node ? node->subtree_size : 0; }
-  Node<KeyTy> *get_left() { return left; }
-  Node<KeyTy> *get_right() { return right; }
-  Node<KeyTy> *get_parent() { return parent; }
-  KeyTy get_key() { return key; }
-  RB_Tree::Color get_color() { return color; }
-  std::size_t get_subtree_size() { return subtree_size; }
 };
 
 template <typename KeyTy> Node<KeyTy> *minNode(Node<KeyTy> *node) {
@@ -64,7 +56,7 @@ template <typename KeyTy> Node<KeyTy> *successor(Node<KeyTy> *node) {
   return parent;
 }
 
-template <typename KeyTy> Node<KeyTy> *predecessor(KeyTy *node) {
+template <typename KeyTy> Node<KeyTy> *predecessor(Node<KeyTy> *node) {
   if (!node)
     return nullptr;
 

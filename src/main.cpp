@@ -1,8 +1,5 @@
 #include "../include/dump.hpp"
 #include "../include/tree.hpp"
-// #include <iostream>
-
-using KeyTy = int;
 
 int main() {
 
@@ -10,7 +7,7 @@ int main() {
   // int first = 0;
   // int second = 0;
 
-  RB_Tree::Tree<KeyTy> tree;
+  RB_Tree::Tree<int> tree;
 
   // tree.insert(9);
   // tree.insert(-1);

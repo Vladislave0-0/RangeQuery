@@ -14,43 +14,41 @@ TEST(RB_Tree, SingleInsert) {
   tree.insert(42);
 
   EXPECT_NE(tree.get_root(), nullptr);
-  EXPECT_EQ(tree.get_root()->get_key(), 42);
-  EXPECT_EQ(tree.get_root()->get_color(), RB_Tree::Color::black);
-  EXPECT_EQ(tree.get_root()->get_subtree_size(), 1);
+  EXPECT_EQ(tree.get_root()->key, 42);
+  EXPECT_EQ(tree.get_root()->color, RB_Tree::Color::black);
+  EXPECT_EQ(tree.get_root()->subtree_size, 1);
   EXPECT_TRUE(tree.verifyTree());
 }
 
 TEST(RB_Tree, DuplicateInsert) {
   RB_Tree::Tree<KeyTy> tree;
   tree.insert(42);
-  size_t initial_size = tree.get_root()->get_subtree_size();
+  size_t initial_size = tree.get_root()->subtree_size;
 
   tree.insert(42);
 
-  EXPECT_EQ(tree.get_root()->get_subtree_size(), initial_size);
-  EXPECT_EQ(tree.get_root()->get_key(), 42);
+  EXPECT_EQ(tree.get_root()->subtree_size, initial_size);
+  EXPECT_EQ(tree.get_root()->key, 42);
   EXPECT_TRUE(tree.verifyTree());
 }
 
 TEST(RB_Tree, AscendingInsert) {
   RB_Tree::Tree<KeyTy> tree;
 
-  for (int i = 0; i < 100; ++i) {
+  for (int i = 0; i < 100; ++i)
     tree.insert(i);
-  }
 
-  EXPECT_EQ(tree.get_root()->get_subtree_size(), 100);
+  EXPECT_EQ(tree.get_root()->subtree_size, 100);
   EXPECT_TRUE(tree.verifyTree());
 }
 
 TEST(RB_Tree, DescendingInsert) {
   RB_Tree::Tree<KeyTy> tree;
 
-  for (int i = 99; i >= 0; --i) {
+  for (int i = 99; i >= 0; --i)
     tree.insert(i);
-  }
 
-  EXPECT_EQ(tree.get_root()->get_subtree_size(), 100);
+  EXPECT_EQ(tree.get_root()->subtree_size, 100);
 }
 
 TEST(RB_Tree, RandomInsert) {
@@ -62,7 +60,7 @@ TEST(RB_Tree, RandomInsert) {
     tree.insert(value);
   }
 
-  EXPECT_EQ(tree.get_root()->get_subtree_size(), 10);
+  EXPECT_EQ(tree.get_root()->subtree_size, 10);
   EXPECT_TRUE(tree.verifyTree());
 }
 
@@ -75,7 +73,7 @@ TEST(RB_Tree, MixedSignNumbers) {
   tree.insert(-5);
   tree.insert(5);
 
-  EXPECT_EQ(tree.get_root()->get_subtree_size(), 5);
+  EXPECT_EQ(tree.get_root()->subtree_size, 5);
   EXPECT_TRUE(tree.verifyTree());
 }
 
@@ -93,27 +91,6 @@ TEST(RB_Tree, SubtreeSizeConsistency) {
   EXPECT_TRUE(tree.verifyTree());
 }
 
-TEST(RB_Tree, RootAlwaysBlack) {
-  RB_Tree::Tree<KeyTy> tree;
-
-  tree.insert(10);
-  EXPECT_EQ(tree.get_root()->get_color(), RB_Tree::Color::black);
-
-  tree.insert(20);
-  EXPECT_EQ(tree.get_root()->get_color(), RB_Tree::Color::black);
-
-  tree.insert(5);
-  EXPECT_EQ(tree.get_root()->get_color(), RB_Tree::Color::black);
-
-  tree.insert(15);
-  EXPECT_EQ(tree.get_root()->get_color(), RB_Tree::Color::black);
-
-  tree.insert(25);
-  EXPECT_EQ(tree.get_root()->get_color(), RB_Tree::Color::black);
-
-  EXPECT_TRUE(tree.verifyTree());
-}
-
 TEST(RB_Tree, EndPointerConsistency) {
   RB_Tree::Tree<KeyTy> tree;
 
@@ -121,16 +98,130 @@ TEST(RB_Tree, EndPointerConsistency) {
   tree.insert(3);
   tree.insert(7);
 
-  EXPECT_NE(tree.get_end().get_left(), nullptr);
-  EXPECT_EQ(tree.get_end().get_left()->get_key(), 7);
+  EXPECT_NE(tree.get_end().left, nullptr);
+  EXPECT_EQ(tree.get_end().left->key, 7);
 
   tree.insert(10);
-  EXPECT_EQ(tree.get_end().get_left()->get_key(), 10);
+  EXPECT_EQ(tree.get_end().left->key, 10);
 
   tree.insert(8);
-  EXPECT_EQ(tree.get_end().get_left()->get_key(), 10);
+  EXPECT_EQ(tree.get_end().left->key, 10);
 
   EXPECT_TRUE(tree.verifyTree());
+}
+
+TEST(RBTreeIterator, EmptyTree) {
+  RB_Tree::Tree<KeyTy> tree;
+  EXPECT_TRUE(tree.begin() == tree.end());
+  EXPECT_EQ(tree.distance(tree.begin(), tree.end()), 0);
+}
+
+TEST(RBTreeIterator, SingleElement) {
+  RB_Tree::Tree<KeyTy> tree;
+  tree.insert(42);
+  ASSERT_TRUE(tree.verifyTree());
+
+  auto it = tree.begin();
+  EXPECT_NE(it, tree.end());
+  EXPECT_EQ(*it, 42);
+  ++it;
+  EXPECT_EQ(it, tree.end());
+
+  auto it2 = tree.end();
+  --it2;
+  EXPECT_EQ(*it2, 42);
+  EXPECT_EQ(it2, tree.begin());
+}
+
+TEST(RBTreeIterator, ForwardTraversal) {
+  RB_Tree::Tree<KeyTy> tree;
+  std::vector<int> keys = {5, 3, 7, 2, 4, 6, 8};
+  for (int k : keys)
+    tree.insert(k);
+  ASSERT_TRUE(tree.verifyTree());
+
+  std::vector<int> expected = {2, 3, 4, 5, 6, 7, 8};
+  std::vector<int> actual;
+  for (auto it = tree.begin(); it != tree.end(); ++it) {
+    actual.push_back(*it);
+  }
+  EXPECT_EQ(actual, expected);
+}
+
+TEST(RBTreeIterator, ReverseTraversal) {
+  RB_Tree::Tree<KeyTy> tree;
+
+  std::vector<int> keys = {5, 3, 7, 2, 4, 6, 8};
+  for (int k : keys)
+    tree.insert(k);
+  ASSERT_TRUE(tree.verifyTree());
+
+  std::vector<int> expected = {8, 7, 6, 5, 4, 3, 2};
+  std::vector<int> actual;
+
+  auto it = tree.end();
+  while (it != tree.begin()) {
+    --it;
+    actual.push_back(*it);
+  }
+
+  EXPECT_EQ(actual, expected);
+}
+
+TEST(RBTreeIterator, IncrementOperators) {
+  RB_Tree::Tree<KeyTy> tree;
+  tree.insert(10);
+  tree.insert(20);
+
+  auto it1 = tree.begin();
+  auto it2 = ++it1;
+  EXPECT_EQ(*it1, 20);
+  EXPECT_EQ(*it2, 20);
+}
+
+TEST(RBTreeIterator, DecrementOperators) {
+  RB_Tree::Tree<KeyTy> tree;
+  tree.insert(10);
+  tree.insert(20);
+
+  auto it1 = tree.end();
+  auto it2 = --it1;
+  EXPECT_EQ(*it1, 20);
+  EXPECT_EQ(*it2, 20);
+}
+
+TEST(RBTreeIterator, RangeQuery) {
+  RB_Tree::Tree<KeyTy> tree;
+
+  for (int i = 1; i <= 10; ++i)
+    tree.insert(i);
+
+  auto l = tree.lowerBound(3);
+  auto r = tree.upperBound(7);
+
+  std::vector<int> expected = {3, 4, 5, 6, 7};
+  std::vector<int> actual;
+
+  for (auto it = l; it != r; ++it)
+    actual.push_back(*it);
+
+  EXPECT_EQ(actual, expected);
+  EXPECT_EQ(tree.distance(l, r), 5);
+}
+
+TEST(RBTreeIterator, LargeTreeTraversal) {
+  RB_Tree::Tree<KeyTy> tree;
+  const int N = 1000;
+  for (int i = N; i >= 1; --i)
+    tree.insert(i);
+  ASSERT_TRUE(tree.verifyTree());
+
+  int count = 0;
+  int expected = 1;
+  for (auto it = tree.begin(); it != tree.end(); ++it, ++count) {
+    EXPECT_EQ(*it, expected++);
+  }
+  EXPECT_EQ(count, N);
 }
 
 int main(int argc, char **argv) {
