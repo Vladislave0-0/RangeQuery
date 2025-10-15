@@ -1,6 +1,6 @@
 #include "../include/dump.hpp"
 #include "../include/tree.hpp"
-#include <iostream>
+// #include <iostream>
 
 using KeyTy = int;
 
@@ -23,15 +23,18 @@ int main() {
   // tree.insert(8);
   // tree.insert(164);
   // tree.insert(512);
-  tree.insert(1);
-  tree.insert(3);
-  tree.insert(5);
-  tree.insert(7);
-  tree.insert(9);
+  // tree.insert(1);
+  // tree.insert(3);
+  // tree.insert(5);
+  // tree.insert(7);
+  // tree.insert(9);
 
+  // for (int i = 0; i < 100; ++i) {
+  //   tree.insert(i);
+  // }
 
   // for (auto it = tree.begin(); it != tree.end(); ++it) {
-    std::cout << *tree.lowerBound(3) << "\n";
+    // std::cout << *tree.lowerBound(3) << "\n";
   // }
   // std::cout << "\n";
   // for (auto it = tree.end(); it != tree.begin();) {
@@ -40,7 +43,7 @@ int main() {
   // }
 
 
-  make_graph("./output/expression.dot", tree.root);
+  // make_graph("./output/expression.dot", tree.root_);
 
   // while (true) {
   //   std::cin >> command;

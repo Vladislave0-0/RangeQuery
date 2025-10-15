@@ -2,30 +2,32 @@
 
 #include "node.hpp"
 #include <cstddef>
-#include <iterator>
 
 namespace RB_Tree {
-template <typename KeyTy = int, class Comparator = std::greater<KeyTy>>
-struct Tree {
+template <typename KeyTy = int> class Tree {
   Node<KeyTy> end_;
+  Node<KeyTy> *root_ = nullptr;
 
-  Node<KeyTy> *root = nullptr;
-
+public:
   Tree() {
     end_.color = Color::black;
     end_.subtree_size = 0;
   };
 
+  Node<KeyTy> *get_root() { return root_; }
+
+  Node<KeyTy> get_end() { return end_; }
+
   void insert(const KeyTy &key) {
-    if (!root) {
-      root = new Node<KeyTy>(key, &end_);
-      end_.left = root;
-      root->color = Color::black;
-      root->subtree_size = 1;
+    if (!root_) {
+      root_ = new Node<KeyTy>(key, &end_);
+      end_.left = root_;
+      root_->color = Color::black;
+      root_->subtree_size = 1;
       return;
     }
 
-    Node<KeyTy> *parent = root;
+    Node<KeyTy> *parent = root_;
     Node<KeyTy> *new_node = nullptr;
 
     while (true) {
@@ -47,55 +49,106 @@ struct Tree {
       }
     }
 
-    // Обновляем размеры вверх (до end)
+    // Updating the sizes for all nodes.
     auto temp = new_node ? new_node->parent : parent;
     while (temp && temp != &end_) {
       ++temp->subtree_size;
       temp = temp->parent;
     }
 
-    // Балансировка после вставки
+    // Balancing after insertion.
     if (new_node) {
-      balanceInsertion(new_node);
+      balanceTree(new_node);
     }
 
-    // Обновляем корень
-    while (root->parent != &end_) {
-      root = root->parent;
-    }
+    // Updating the root.
+    while (root_->parent != &end_)
+      root_ = root_->parent;
 
-    // Обновляем максимальный элемент
-    end_.left = root;
-    while (end_.left && end_.left->right) {
+    // Updating the maximum element.
+    end_.left = root_;
+    while (end_.left && end_.left->right)
       end_.left = end_.left->right;
-    }
   }
 
-  void balanceInsertion(Node<KeyTy> *node) {
-    while (node != root && node->parent->color == Color::red) {
+  bool verifyTree() const {
+    if (!root_)
+      return true;
+
+    // The root must be black.
+    if (root_->color != Color::black) {
+      std::cerr << "Violation: Root is not black" << std::endl;
+      return false;
+    }
+
+    // The red node must have black children.
+    if (!checkRedProperty(root_)) {
+      std::cerr << "Violation: Red node has red child" << std::endl;
+      return false;
+    }
+
+    // All paths contain the same number of black nodes.
+    int black_count = -1;
+    if (!checkBlackHeight(root_, 0, black_count)) {
+      std::cerr << "Violation: Black height is not consistent" << std::endl;
+      return false;
+    }
+
+    // Checking the BST property.
+    if (!checkBSTProperty(root_)) {
+      std::cerr << "Violation: BST property is broken" << std::endl;
+      return false;
+    }
+
+    // Checking the correctness of parent links.
+    if (!checkParentLinks(root_, &end_)) {
+      std::cerr << "Violation: Parent links are incorrect" << std::endl;
+      return false;
+    }
+
+    // Checking the correctness of subtree_size.
+    if (!checkSubtreeSizes(root_)) {
+      std::cerr << "Violation: Subtree sizes are incorrect" << std::endl;
+      return false;
+    }
+
+    // Checking the end pointer.
+    if (!checkEndPointer()) {
+      std::cerr << "Violation: End pointer is incorrect" << std::endl;
+      return false;
+    }
+
+    return true;
+  }
+
+private:
+  void balanceTree(Node<KeyTy> *node) {
+    while (node != root_ && node->parent->color == Color::red) {
       Node<KeyTy> *parent = node->parent;
       Node<KeyTy> *grandparent = parent->parent;
 
       if (parent == grandparent->left) {
+        // Parent is left.
         Node<KeyTy> *uncle = grandparent->right;
 
-        // Случай 1: дядя красный
+        // Case 1: Uncle is Red.
         if (uncle && uncle->color == Color::red) {
           parent->color = Color::black;
           uncle->color = Color::black;
           grandparent->color = Color::red;
           node = grandparent;
         } else {
-          // Случай 2: дядя черный и узел - правый потомок
+          // Case 2: Uncle is black and the node is right.
           if (node == parent->right) {
             node = parent;
             rotateLeft(node);
-            // После вращения обновляем указатели
+
+            // Updating the pointers after rotation.
             parent = node->parent;
             grandparent = parent ? parent->parent : nullptr;
           }
 
-          // Случай 3: дядя черный и узел - левый потомок
+          // Case 3: Uncle is black and node is left.
           if (parent) {
             parent->color = Color::black;
             if (grandparent) {
@@ -105,26 +158,27 @@ struct Tree {
           }
         }
       } else {
-        // Симметричный случай: родитель - правый потомок
+        // Parent is right.
         Node<KeyTy> *uncle = grandparent->left;
 
-        // Случай 1: дядя красный
+        // Case 1: Uncle is Red.
         if (uncle && uncle->color == Color::red) {
           parent->color = Color::black;
           uncle->color = Color::black;
           grandparent->color = Color::red;
           node = grandparent;
         } else {
-          // Случай 2: дядя черный и узел - левый потомок
+          // Case 2: Uncle is black and the node is left.
           if (node == parent->left) {
             node = parent;
             rotateRight(node);
-            // После вращения обновляем указатели
+
+            // Updating the pointers after rotation.
             parent = node->parent;
             grandparent = parent ? parent->parent : nullptr;
           }
 
-          // Случай 3: дядя черный и узел - правый потомок
+          // Case 3: Uncle is black and the node is right.
           if (parent) {
             parent->color = Color::black;
             if (grandparent) {
@@ -136,8 +190,8 @@ struct Tree {
       }
     }
 
-    // Корень всегда черный
-    root->color = Color::black;
+    // The root is always black.
+    root_->color = Color::black;
   }
 
   void rotateLeft(Node<KeyTy> *node) {
@@ -147,14 +201,13 @@ struct Tree {
     Node<KeyTy> *right_child = node->right;
     node->right = right_child->left;
 
-    if (right_child->left) {
+    if (right_child->left)
       right_child->left->parent = node;
-    }
 
     right_child->parent = node->parent;
 
     if (node->parent == &end_) {
-      root = right_child;
+      root_ = right_child;
     } else if (node == node->parent->left) {
       node->parent->left = right_child;
     } else {
@@ -174,14 +227,13 @@ struct Tree {
     Node<KeyTy> *left_child = node->left;
     node->left = left_child->right;
 
-    if (left_child->right) {
+    if (left_child->right)
       left_child->right->parent = node;
-    }
 
     left_child->parent = node->parent;
 
     if (node->parent == &end_) {
-      root = left_child;
+      root_ = left_child;
     } else if (node == node->parent->right) {
       node->parent->right = left_child;
     } else {
@@ -194,80 +246,13 @@ struct Tree {
     recalculateSize(node->parent);
   }
 
-  static void balanceTree(const Tree<KeyTy> &tree) {}
-
-  static size_t recalculateSize(Node<KeyTy> *node) {
+  std::size_t recalculateSize(Node<KeyTy> *node) {
     if (!node)
       return 0;
 
     node->subtree_size =
         1 + recalculateSize(node->left) + recalculateSize(node->right);
     return node->subtree_size;
-  }
-
-  // Node<KeyTy> *minNode(Node<KeyTy> *node) const {
-  //   while (node && node->left)
-  //     node = node->left;
-
-  //   return node;
-  // }
-
-  // Node<KeyTy> *maxNode(Node<KeyTy> *node) const {
-  //   while (node && node->right)
-  //     node = node->right;
-
-  //   return node;
-  // }
-
-  bool verify() const {
-    if (!root) {
-      return true; // Пустое дерево считается валидным
-    }
-
-    // Свойство 2: Корень должен быть черным
-    if (root->color != Color::black) {
-      std::cerr << "Violation: Root is not black" << std::endl;
-      return false;
-    }
-
-    // Свойство 4: Красный узел должен иметь черных потомков
-    if (!checkRedProperty(root)) {
-      std::cerr << "Violation: Red node has red child" << std::endl;
-      return false;
-    }
-
-    // Свойство 5: Все пути содержат одинаковое количество черных узлов
-    int black_count = -1;
-    if (!checkBlackHeight(root, 0, black_count)) {
-      std::cerr << "Violation: Black height is not consistent" << std::endl;
-      return false;
-    }
-
-    // Проверка BST свойства
-    if (!checkBSTProperty(root)) {
-      std::cerr << "Violation: BST property is broken" << std::endl;
-      return false;
-    }
-
-    // Проверка корректности parent связей
-    if (!checkParentLinks(root, &end_)) {
-      std::cerr << "Violation: Parent links are incorrect" << std::endl;
-      return false;
-    }
-
-    // Проверка корректности subtree_size
-    if (!checkSubtreeSizes(root)) {
-      std::cerr << "Violation: Subtree sizes are incorrect" << std::endl;
-      return false;
-    }
-
-    // Проверка end pointer
-    if (!checkEndPointer()) {
-      std::cerr << "Violation: End pointer is incorrect" << std::endl;
-      return false;
-    }
-
-    return true;
   }
 
   bool checkRedProperty(Node<KeyTy> *node) const {
@@ -368,14 +353,12 @@ struct Tree {
   }
 
   bool checkEndPointer() const {
-    if (!root) {
+    if (!root_)
       return end_.left == nullptr;
-    }
 
-    Node<KeyTy> *max_node = root;
-    while (max_node && max_node->right) {
+    Node<KeyTy> *max_node = root_;
+    while (max_node && max_node->right)
       max_node = max_node->right;
-    }
 
     if (end_.left != max_node) {
       std::cerr << "End pointer violation: expected " << max_node->key
@@ -386,34 +369,19 @@ struct Tree {
     return true;
   }
 
-  struct Iterator {
-    friend struct Tree;
+  class Iterator {
+    Iterator(Node<KeyTy> *p) : ptr(p) {}
 
+  private:
     Node<KeyTy> *ptr = nullptr;
 
-    // using iterator_category = std::bidirectional_iterator_tag;
-    // using value_type = KeyTy;
-    // using difference_type = std::ptrdiff_t;
-    // using pointer = const KeyTy*;
-    // using reference = const KeyTy&;
-
-    explicit Iterator(Node<KeyTy> *p) : ptr(p) {}
-
     const KeyTy &operator*() const { return ptr->key; }
-    const KeyTy *operator->() const { return &ptr->key; }
 
-    bool operator==(const Iterator &other) const { return ptr == other.ptr; }
     bool operator!=(const Iterator &other) const { return ptr != other.ptr; }
 
     Iterator &operator++() {
       ptr = RB_Tree::successor(ptr);
       return *this;
-    }
-
-    Iterator operator++(int) {
-      Iterator tmp = *this;
-      ++(*this);
-      return tmp;
     }
 
     Iterator &operator--() {
@@ -428,24 +396,19 @@ struct Tree {
 
       return *this;
     }
-
-    Iterator operator--(int) {
-      Iterator tmp = *this;
-      --(*this);
-      return tmp;
-    }
   };
 
   Iterator begin() const {
-    if (!root)
+    if (!root_)
       return end();
-    return Iterator(RB_Tree::minNode(root));
+
+    return Iterator(RB_Tree::minNode(root_));
   }
 
   Iterator end() const { return Iterator(const_cast<Node<KeyTy> *>(&end_)); }
 
   Iterator lowerBound(const KeyTy &key) {
-    Node<KeyTy> *current = root;
+    Node<KeyTy> *current = root_;
     Node<KeyTy> *candidate = &end_;
 
     while (current) {
@@ -461,7 +424,7 @@ struct Tree {
   }
 
   Iterator upperBound(const KeyTy &key) {
-    Node<KeyTy> *current = root;
+    Node<KeyTy> *current = root_;
     Node<KeyTy> *candidate = &end_;
 
     while (current) {
@@ -479,7 +442,7 @@ struct Tree {
   std::size_t distance(Iterator first, Iterator second) {
     std::size_t distance = 0;
 
-    while(first != second) {
+    while (first != second) {
       ++distance;
       ++first;
     }

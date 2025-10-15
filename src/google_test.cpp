@@ -5,31 +5,31 @@ using KeyTy = int;
 
 TEST(RB_Tree, EmptyTree) {
   RB_Tree::Tree<KeyTy> tree;
-  EXPECT_EQ(tree.root, nullptr);
-  EXPECT_TRUE(tree.verify());
+  EXPECT_EQ(tree.get_root(), nullptr);
+  EXPECT_TRUE(tree.verifyTree());
 }
 
 TEST(RB_Tree, SingleInsert) {
   RB_Tree::Tree<KeyTy> tree;
   tree.insert(42);
 
-  EXPECT_NE(tree.root, nullptr);
-  EXPECT_EQ(tree.root->key, 42);
-  EXPECT_EQ(tree.root->color, RB_Tree::Color::black);
-  EXPECT_EQ(tree.root->subtree_size, 1);
-  EXPECT_TRUE(tree.verify());
+  EXPECT_NE(tree.get_root(), nullptr);
+  EXPECT_EQ(tree.get_root()->get_key(), 42);
+  EXPECT_EQ(tree.get_root()->get_color(), RB_Tree::Color::black);
+  EXPECT_EQ(tree.get_root()->get_subtree_size(), 1);
+  EXPECT_TRUE(tree.verifyTree());
 }
 
 TEST(RB_Tree, DuplicateInsert) {
   RB_Tree::Tree<KeyTy> tree;
   tree.insert(42);
-  size_t initial_size = tree.root->subtree_size;
+  size_t initial_size = tree.get_root()->get_subtree_size();
 
   tree.insert(42);
 
-  EXPECT_EQ(tree.root->subtree_size, initial_size);
-  EXPECT_EQ(tree.root->key, 42);
-  EXPECT_TRUE(tree.verify());
+  EXPECT_EQ(tree.get_root()->get_subtree_size(), initial_size);
+  EXPECT_EQ(tree.get_root()->get_key(), 42);
+  EXPECT_TRUE(tree.verifyTree());
 }
 
 TEST(RB_Tree, AscendingInsert) {
@@ -39,8 +39,8 @@ TEST(RB_Tree, AscendingInsert) {
     tree.insert(i);
   }
 
-  EXPECT_EQ(tree.root->subtree_size, 100);
-  EXPECT_TRUE(tree.verify());
+  EXPECT_EQ(tree.get_root()->get_subtree_size(), 100);
+  EXPECT_TRUE(tree.verifyTree());
 }
 
 TEST(RB_Tree, DescendingInsert) {
@@ -50,7 +50,7 @@ TEST(RB_Tree, DescendingInsert) {
     tree.insert(i);
   }
 
-  EXPECT_EQ(tree.root->subtree_size, 100);
+  EXPECT_EQ(tree.get_root()->get_subtree_size(), 100);
 }
 
 TEST(RB_Tree, RandomInsert) {
@@ -62,27 +62,26 @@ TEST(RB_Tree, RandomInsert) {
     tree.insert(value);
   }
 
-  EXPECT_EQ(tree.root->subtree_size, 10);
-  EXPECT_TRUE(tree.verify());
+  EXPECT_EQ(tree.get_root()->get_subtree_size(), 10);
+  EXPECT_TRUE(tree.verifyTree());
 }
 
 TEST(RB_Tree, MixedSignNumbers) {
   RB_Tree::Tree<KeyTy> tree;
-  
+
   tree.insert(-10);
   tree.insert(10);
   tree.insert(0);
   tree.insert(-5);
   tree.insert(5);
-  
-  EXPECT_EQ(tree.root->subtree_size, 5);
-  EXPECT_TRUE(tree.verify());
-}
 
+  EXPECT_EQ(tree.get_root()->get_subtree_size(), 5);
+  EXPECT_TRUE(tree.verifyTree());
+}
 
 TEST(RB_Tree, SubtreeSizeConsistency) {
   RB_Tree::Tree<KeyTy> tree;
-  
+
   tree.insert(5);
   tree.insert(3);
   tree.insert(7);
@@ -91,47 +90,47 @@ TEST(RB_Tree, SubtreeSizeConsistency) {
   tree.insert(6);
   tree.insert(8);
 
-  EXPECT_TRUE(tree.verify());
+  EXPECT_TRUE(tree.verifyTree());
 }
 
 TEST(RB_Tree, RootAlwaysBlack) {
   RB_Tree::Tree<KeyTy> tree;
-  
-  tree.insert(10);
-  EXPECT_EQ(tree.root->color, RB_Tree::Color::black);
-  
-  tree.insert(20);
-  EXPECT_EQ(tree.root->color, RB_Tree::Color::black);
-  
-  tree.insert(5);
-  EXPECT_EQ(tree.root->color, RB_Tree::Color::black);
-  
-  tree.insert(15);
-  EXPECT_EQ(tree.root->color, RB_Tree::Color::black);
-  
-  tree.insert(25);
-  EXPECT_EQ(tree.root->color, RB_Tree::Color::black);
 
-  EXPECT_TRUE(tree.verify());
+  tree.insert(10);
+  EXPECT_EQ(tree.get_root()->get_color(), RB_Tree::Color::black);
+
+  tree.insert(20);
+  EXPECT_EQ(tree.get_root()->get_color(), RB_Tree::Color::black);
+
+  tree.insert(5);
+  EXPECT_EQ(tree.get_root()->get_color(), RB_Tree::Color::black);
+
+  tree.insert(15);
+  EXPECT_EQ(tree.get_root()->get_color(), RB_Tree::Color::black);
+
+  tree.insert(25);
+  EXPECT_EQ(tree.get_root()->get_color(), RB_Tree::Color::black);
+
+  EXPECT_TRUE(tree.verifyTree());
 }
 
 TEST(RB_Tree, EndPointerConsistency) {
   RB_Tree::Tree<KeyTy> tree;
-  
+
   tree.insert(5);
   tree.insert(3);
   tree.insert(7);
-  
-  EXPECT_NE(tree.end_.left, nullptr);
-  EXPECT_EQ(tree.end_.left->key, 7);
-  
-  tree.insert(10);
-  EXPECT_EQ(tree.end_.left->key, 10);
-  
-  tree.insert(8);
-  EXPECT_EQ(tree.end_.left->key, 10);
 
-  EXPECT_TRUE(tree.verify());
+  EXPECT_NE(tree.get_end().get_left(), nullptr);
+  EXPECT_EQ(tree.get_end().get_left()->get_key(), 7);
+
+  tree.insert(10);
+  EXPECT_EQ(tree.get_end().get_left()->get_key(), 10);
+
+  tree.insert(8);
+  EXPECT_EQ(tree.get_end().get_left()->get_key(), 10);
+
+  EXPECT_TRUE(tree.verifyTree());
 }
 
 int main(int argc, char **argv) {
