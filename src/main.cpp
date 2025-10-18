@@ -1,5 +1,4 @@
 #include "../include/tree.hpp"
-#include <format>
 
 using namespace RB_Tree;
 
@@ -44,24 +43,20 @@ int main() {
       command = 0;
       break;
     }
-
     case 'q': {
       std::cin >> first >> second;
-      if (first > second) {
-        std::cout << std::format("\nBad input format: {} > {}\n", first,
-                                 second);
-        return 0;
+
+      std::size_t distance = 0;
+      if (second > first) {
+        Tree<KeyTy>::Iterator start = tree.lowerBound(first);
+        Tree<KeyTy>::Iterator fin = tree.upperBound(second);
+        distance = tree.distance(start, fin);
       }
 
-      Tree<KeyTy>::Iterator start = tree.lowerBound(first);
-      Tree<KeyTy>::Iterator fin = tree.upperBound(second);
-
-      std::cout << tree.distance(start, fin) << " ";
-
+      std::cout << distance << " ";
       command = 0;
       break;
     }
-
     default: {
       std::cout << std::endl;
 

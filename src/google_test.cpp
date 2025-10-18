@@ -3,10 +3,33 @@
 
 using KeyTy = int;
 
-TEST(RB_Tree, EmptyTree) {
+TEST(RB_Tree, InvalidInput) {
+  RB_Tree::Tree<KeyTy> tree;
+
+  tree.insert(2);
+  tree.insert(5);
+
+  auto l = tree.lowerBound(6);
+  auto r = tree.upperBound(1);
+
+  EXPECT_EQ(tree.distance(l, r), 0);
+  EXPECT_EQ(tree.distance(r, l), 2);
+}
+
+TEST(RB_Tree, NullTree) {
   RB_Tree::Tree<KeyTy> tree;
   EXPECT_EQ(tree.get_root(), nullptr);
   EXPECT_TRUE(tree.verifyTree());
+}
+
+TEST(RB_Tree, EmptyTree) {
+  RB_Tree::Tree<KeyTy> tree;
+
+  auto l = tree.lowerBound(6);
+  auto r = tree.upperBound(1);
+
+  EXPECT_EQ(tree.distance(l, r), 0);
+  EXPECT_EQ(tree.distance(r, l), 0);
 }
 
 TEST(RB_Tree, SingleInsert) {
