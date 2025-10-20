@@ -15,26 +15,30 @@ endif()
 
 include_directories(include/)
 
-set(RANGE_QUERY_SOURCES
-    src/main.cpp
-    # src/set.cpp
-)
 
-add_executable(tree ${RANGE_QUERY_SOURCES})
+add_executable(tree src/tree.cpp)
+target_include_directories(tree PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-# Include directories for the target
-target_include_directories(tree PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-)
+add_executable(std-set src/std-set.cpp)
+target_include_directories(std-set PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # Testing
 enable_testing()
 add_executable(google_test src/google_test.cpp)
 target_link_libraries(google_test PRIVATE GTest::gtest_main)
-
 gtest_discover_tests(google_test TEST_PREFIX gtest_)
 
 add_custom_target(run_all_tests
     COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
     DEPENDS google_test
+)
+
+find_package(Python3 COMPONENTS Interpreter REQUIRED)
+
+add_custom_target(benchmark
+    COMMAND ${CMAKE_BUILD_TYPE} $<TARGET_FILE:tree> $<TARGET_FILE:std-set>
+    COMMAND Python3::Interpreter ${CMAKE_SOURCE_DIR}/run_benchmarks.py
+    DEPENDS tree std-set
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMENT "Running benchmarks and generating statistics/time.txt"
 )
