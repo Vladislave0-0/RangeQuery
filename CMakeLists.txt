@@ -36,9 +36,8 @@ add_custom_target(run_all_tests
 find_package(Python3 COMPONENTS Interpreter REQUIRED)
 
 add_custom_target(benchmark
-    COMMAND ${CMAKE_BUILD_TYPE} $<TARGET_FILE:tree> $<TARGET_FILE:std-set>
-    COMMAND Python3::Interpreter ${CMAKE_SOURCE_DIR}/run_benchmarks.py
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/run_benchmarks.py
     DEPENDS tree std-set
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    COMMENT "Running benchmarks and generating statistics/time.txt"
+    COMMENT "Running benchmarks and generating statistics"
 )
