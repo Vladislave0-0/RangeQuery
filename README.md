@@ -28,10 +28,10 @@ k 10 k 20 q 8 31 q 6 9 k 30 k 40 q 15 40
 ## Компиляция
 ```powershell
 cmake -S ./ -B build/ -DCMAKE_BUILD_TYPE=Release
-cmake --build build/
+cmake --build build/ --target tree
 ```
 
-**Запуск google-тестов**.:
+**Запуск google-тестов**:
 ```powershell
 cmake --build build/ --target run_tests
 ```
@@ -41,7 +41,21 @@ cmake --build build/ --target run_tests
 ./build/tree < path_to_test
 ```
 
-Также в проекте реализованы макросы `TIME` и  `GPAPHVIZ_DUMP`, которые можно использовать для вывода отладочной информации и замеров времени работы красно-чёрного дерева. Для активации макросов нужно добавить соответствующие `#define` в исходный код перед компиляцией.
+Также в проекте реализованы макросы `TIME` и  `GPAPHVIZ_DUMP`, которые можно использовать для замеров времени работы красно-чёрного дерева и вывода отладочной информации в виде графического дампа. 
+
+Для активации макросов необходимо собрать проект следующим образом:
+```powershell
+cmake -S . -B build -DCMAKE_CXX_FLAGS="-DTIME" 
+# Или можно сразу два макроса: -DCMAKE_CXX_FLAGS="-DTIME -DGPAPHVIZ_DUMP"
+```
+```powershell
+cmake --build build/ --target tree
+```
+```powershell
+./build/tree < path_to_test
+```
+
+
 
 Пример графического дампа:
 
