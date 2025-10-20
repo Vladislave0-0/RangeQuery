@@ -32,6 +32,38 @@ TEST(RB_Tree, EmptyTree) {
   EXPECT_EQ(tree.distance(r, l), 0);
 }
 
+TEST(RB_Tree, ZeroElements) {
+  RB_Tree::Tree<KeyTy> tree1;
+  tree1.insert(0);
+  auto l1 = tree1.lowerBound(1);
+  auto r1 = tree1.upperBound(9);
+  EXPECT_EQ(tree1.distance(l1, r1), 0);
+  EXPECT_EQ(tree1.distance(r1, l1), 0);
+
+  RB_Tree::Tree<KeyTy> tree2;
+  tree2.insert(10);
+  auto l2 = tree2.lowerBound(1);
+  auto r2 = tree2.upperBound(9);
+  EXPECT_EQ(tree2.distance(l2, r2), 0);
+  EXPECT_EQ(tree2.distance(r2, l2), 0);
+}
+
+TEST(RB_Tree, EdgeElement) {
+  RB_Tree::Tree<KeyTy> tree1;
+  tree1.insert(1);
+  auto l1 = tree1.lowerBound(1);
+  auto r1 = tree1.upperBound(9);
+  EXPECT_EQ(tree1.distance(l1, r1), 1);
+  EXPECT_EQ(tree1.distance(r1, l1), 0);
+
+  RB_Tree::Tree<KeyTy> tree2;
+  tree2.insert(9);
+  auto l2 = tree2.lowerBound(1);
+  auto r2 = tree2.upperBound(9);
+  EXPECT_EQ(tree2.distance(l2, r2), 1);
+  EXPECT_EQ(tree2.distance(r2, l2), 0);
+}
+
 TEST(RB_Tree, SingleInsert) {
   RB_Tree::Tree<KeyTy> tree;
   tree.insert(42);

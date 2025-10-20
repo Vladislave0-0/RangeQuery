@@ -133,16 +133,19 @@ public:
     if (!root_ || first.ptr == nullptr || last.ptr == nullptr)
       return 0;
 
-    size_t rank_first = getRank(first.ptr);
+    if (first.ptr == &end_ && last.ptr == &end_)
+      return 0;
 
-    size_t rank_last;
-    if (last.ptr == &end_) {
-      rank_last = root_->subtree_size;
-    } else {
-      rank_last = getRank(last.ptr);
-    }
+    if (first.ptr == &end_)
+      return 0;
 
-    return (rank_last >= rank_first) ? (rank_last - rank_first) : 0;
+    if (last.ptr == &end_)
+      return root_->subtree_size - getRank(first.ptr);
+
+    size_t r1 = getRank(first.ptr);
+    size_t r2 = getRank(last.ptr);
+    
+    return (r2 >= r1) ? (r2 - r1) : 0;
   }
 };
 
