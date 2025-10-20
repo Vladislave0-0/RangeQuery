@@ -2,4 +2,3 @@ build
 .vscode
 .cache
 compile_commands.json
-input.txt
