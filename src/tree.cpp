@@ -2,12 +2,10 @@
 
 using namespace RB_Tree;
 
-#define TIME
 #ifdef TIME
 #include <chrono>
 #endif // TIME
 
-// #define GPAPHVIZ_DUMP
 #ifdef GPAPHVIZ_DUMP
 #include "../include/dump.hpp"
 #include <string>

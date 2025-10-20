@@ -2,7 +2,6 @@
 #include <iterator>
 #include <set>
 
-#define TIME
 #ifdef TIME
 #include <chrono>
 #endif // TIME
@@ -33,16 +32,15 @@ int main() {
 
     case 'q': {
       std::cin >> first >> second;
-      if (first > second) {
-        std::cout << std::format("Bad input format: {} > {}\n", first, second);
-        return 0;
+
+      std::size_t distance = 0;
+      if (second > first) {
+        std::set<int>::iterator start = set_.lower_bound(first);
+        std::set<int>::iterator fin = set_.upper_bound(second);
+        distance = std::distance(start, fin);
       }
 
-      std::set<int>::iterator start = set_.lower_bound(first);
-      std::set<int>::iterator fin = set_.upper_bound(second);
-
-      std::cout << std::distance(start, fin) << " ";
-
+      std::cout << distance << " ";
       command = 0;
       break;
     }
