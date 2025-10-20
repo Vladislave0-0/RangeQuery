@@ -53,32 +53,32 @@ def extract_time(output_file):
 
 def collect_results():
     print("\nCollecting results into time_comparison.txt...")
-    rb_times = []
+    tree_times = []
     set_times = []
 
     for i in range(1, TESTS_NUM + 1):
         rb_t = extract_time(os.path.join(TREE_OUT_DIR, f"test{i}.txt"))
         set_t = extract_time(os.path.join(SET_OUT_DIR, f"test{i}.txt"))
-        rb_times.append(rb_t)
+        tree_times.append(rb_t)
         set_times.append(set_t)
 
     # Сохраняем time.txt
     with open(TIME_FILE, 'w') as f:
         f.write("==========RB_TREE==========\n")
-        for i, t in enumerate(rb_times, 1):
+        for i, t in enumerate(tree_times, 1):
             f.write(f"test{i}: {t:.3f} s\n")
         f.write("\n============SET============\n")
         for i, t in enumerate(set_times, 1):
             f.write(f"test{i}: {t:.3f} s\n")
 
     print(f"\nResults saved to {TIME_FILE}")
-    return np.array(rb_times), np.array(set_times)
+    return np.array(tree_times), np.array(set_times)
 
-def plot_results(rb_times, set_times):
+def plot_results(tree_times, set_times):
     print("\nGenerating plots...")
     sizes_smooth = np.linspace(SIZES.min(), SIZES.max(), 300)
 
-    spl_rb = make_interp_spline(SIZES, rb_times, k=2)
+    spl_rb = make_interp_spline(SIZES, tree_times, k=2)
     spl_set = make_interp_spline(SIZES, set_times, k=2)
     rb_smooth = np.maximum(spl_rb(sizes_smooth), 0)
     set_smooth = np.maximum(spl_set(sizes_smooth), 0)
@@ -88,7 +88,7 @@ def plot_results(rb_times, set_times):
     # === График 1: Логарифмическая шкала ===
     ax1.plot(sizes_smooth, rb_smooth, '-', color='tab:blue', linewidth=2.5, label='RB-Tree (O(log n) distance)')
     ax1.plot(sizes_smooth, set_smooth, '-', color='tab:red', linewidth=2.5, label='std::set (O(k) distance)')
-    ax1.plot(SIZES, rb_times, 'o', color='tab:blue', markersize=6)
+    ax1.plot(SIZES, tree_times, 'o', color='tab:blue', markersize=6)
     ax1.plot(SIZES, set_times, 's', color='tab:red', markersize=6)
     ax1.set_yscale('log')
     ax1.set_xlabel('Количество операций')
@@ -100,7 +100,7 @@ def plot_results(rb_times, set_times):
     # === График 2: Линейная шкала ===
     ax2.plot(sizes_smooth, rb_smooth, '-', color='tab:blue', linewidth=2.5, label='RB-Tree (O(log n) distance)')
     ax2.plot(sizes_smooth, set_smooth, '-', color='tab:red', linewidth=2.5, label='std::set (O(k) distance)')
-    ax2.plot(SIZES, rb_times, 'o', color='tab:blue', markersize=6)
+    ax2.plot(SIZES, tree_times, 'o', color='tab:blue', markersize=6)
     ax2.plot(SIZES, set_times, 's', color='tab:red', markersize=6)
     ax2.set_xlabel('Количество операций')
     ax2.set_ylabel('Время, с')
@@ -109,8 +109,8 @@ def plot_results(rb_times, set_times):
     ax2.grid(True, ls="--", linewidth=0.5)
 
     # Аннотации
-    ax2.annotate(f'{rb_times[-1]:.3f} с', 
-                 xy=(SIZES[-1], rb_times[-1]), 
+    ax2.annotate(f'{tree_times[-1]:.3f} с', 
+                 xy=(SIZES[-1], tree_times[-1]), 
                  xytext=(10, 10), 
                  textcoords='offset points',
                  fontsize=10,
@@ -129,13 +129,13 @@ def plot_results(rb_times, set_times):
     plt.close()
 
 if __name__ == "__main__":
-    rb_exe = "tree"
-    set_exe = "std-set"
+    tree_exe = "tree_bench"
+    set_exe = "set_bench"
 
-    run_benchmark(rb_exe, TREE_OUT_DIR)
+    run_benchmark(tree_exe, TREE_OUT_DIR)
     run_benchmark(set_exe, SET_OUT_DIR)
 
-    rb_times, set_times = collect_results()
+    tree_times, set_times = collect_results()
 
-    plot_results(rb_times, set_times)
+    plot_results(tree_times, set_times)
     
