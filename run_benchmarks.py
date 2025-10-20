@@ -33,7 +33,9 @@ def run_benchmark(exe_name, output_dir):
         
         with open(test_path, 'r') as fin, open(out_path, 'w') as fout:
             subprocess.run([exe_path], stdin=fin, stdout=fout, stderr=subprocess.STDOUT, text=True)
-        print(f"  {test} --> {out_path}")
+
+        relative_out = os.path.relpath(out_path, PROJECT_ROOT)
+        print(f"  {test} --> /{relative_out}")
 
 def extract_time(output_file):
     """Извлекает время из файла вида '... Time: X.XXX s'"""
