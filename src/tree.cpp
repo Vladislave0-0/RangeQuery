@@ -51,13 +51,14 @@ int main() {
         distance = tree.distance(start, fin);
       }
 
+#ifndef BENCHMARK
       std::cout << distance << " ";
+#endif // BENCHMARK
+
       command = 0;
       break;
     }
     default: {
-      std::cout << std::endl;
-
 #ifdef TIME
       auto end = std::chrono::steady_clock::now();
       auto elapsed_ms =

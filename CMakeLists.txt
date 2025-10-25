@@ -25,11 +25,11 @@ target_include_directories(std-set PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 add_executable(tree_bench src/tree.cpp)
 target_include_directories(tree_bench PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_compile_definitions(tree_bench PRIVATE TIME)
+target_compile_definitions(tree_bench PRIVATE TIME BENCHMARK)
 
 add_executable(set_bench src/std-set.cpp)
 target_include_directories(set_bench PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_compile_definitions(set_bench PRIVATE TIME)
+target_compile_definitions(set_bench PRIVATE TIME BENCHMARK)
 
 # Testing
 enable_testing()

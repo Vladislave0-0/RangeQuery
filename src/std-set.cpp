@@ -40,7 +40,10 @@ int main() {
         distance = std::distance(start, fin);
       }
 
+#ifndef BENCHMARK
       std::cout << distance << " ";
+#endif // BENCHMARK
+
       command = 0;
       break;
     }

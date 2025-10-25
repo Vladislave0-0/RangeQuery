@@ -25,7 +25,7 @@ SIZES = np.array([1_000, 10_000, 25_000, 50_000, 100_000, 250_000, 500_000, 1_00
 test_files = [f"test{i}.dat" for i in range(1, TESTS_NUM + 1)]
 
 def run_benchmark(exe_name, output_dir):
-    print(f"\nRunning benchmarks for {exe_name}:")
+    print(f"\nRunning benchmarks for target {exe_name}:")
     for test in test_files:
         test_path = os.path.join(TESTS_DIR, test)
         out_path = os.path.join(output_dir, test.replace(".dat", ".txt"))
