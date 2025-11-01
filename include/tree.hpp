@@ -1,34 +1,45 @@
 #pragma once
 
 #include "node.hpp"
-#include <cstddef>
 #include <iostream>
+#include <stack>
 
 namespace RB_Tree {
 template <typename KeyTy = int> class Tree final {
-  Node<KeyTy> end_;
   Node<KeyTy> *root_ = nullptr;
 
 public:
-  Tree() {
-    end_.left = end_.right = end_.parent = nullptr;
-    end_.color = Color::black;
-    end_.subtree_size = 0;
+  Tree() = default;
+  Tree(const Tree &) = delete;
+  Tree &operator=(const Tree &) = delete;
+  Tree(Tree &&) = delete;
+  Tree &operator=(Tree &&) = delete;
+  ~Tree() {
+    if (!root_)
+      return;
+
+    std::stack<Node<KeyTy> *> nodes;
+    nodes.push(root_);
+
+    while (!nodes.empty()) {
+      Node<KeyTy> *current = nodes.top();
+      nodes.pop();
+
+      if (current->left)
+        nodes.push(current->left);
+      if (current->right)
+        nodes.push(current->right);
+
+      delete current;
+    }
   };
 
-  ~Tree() { cleanTree(root_); };
-
-  inline Node<KeyTy> *get_root() { return root_; }
-  const inline Node<KeyTy> &get_end() const { return end_; }
+  Node<KeyTy> *get_root() { return root_; }
 
   void insert(const KeyTy &key);
   bool verifyTree() const;
 
 private:
-  std::size_t recalculateSize(Node<KeyTy> *node);
-  void cleanTree(Node<KeyTy> *);
-
-  std::size_t inline getSize(Node<KeyTy> *node) const;
   void rotateLeft(Node<KeyTy> *node);
   void rotateRight(Node<KeyTy> *node);
   void balanceTree(Node<KeyTy> *node);
@@ -40,50 +51,11 @@ private:
                         Node<KeyTy> *max = nullptr) const;
   bool checkParentLinks(Node<KeyTy> *node, const Node<KeyTy> *parent) const;
   bool checkSubtreeSizes(Node<KeyTy> *node) const;
-  bool checkEndPointer() const;
 
 public:
-  struct Iterator {
-    Node<KeyTy> *ptr = nullptr;
-
-    Iterator(Node<KeyTy> *p) : ptr(p) {}
-
-    const KeyTy &operator*() const { return ptr->key; }
-
-    bool operator==(const Iterator &other) const { return ptr == other.ptr; }
-    bool operator!=(const Iterator &other) const { return ptr != other.ptr; }
-
-    Iterator &operator++() {
-      ptr = RB_Tree::successor(ptr);
-      return *this;
-    }
-
-    Iterator &operator--() {
-      if (!ptr)
-        return *this;
-
-      if (ptr->subtree_size == 0) {
-        ptr = ptr->left;
-      } else {
-        ptr = RB_Tree::predecessor(ptr);
-      }
-
-      return *this;
-    }
-  };
-
-  Iterator begin() const {
-    if (!root_)
-      return end();
-
-    return Iterator(RB_Tree::minNode(root_));
-  }
-
-  Iterator end() const { return Iterator(const_cast<Node<KeyTy> *>(&end_)); }
-
-  Iterator lowerBound(const KeyTy &key) {
+  Node<KeyTy> *lowerBound(const KeyTy &key) {
     Node<KeyTy> *current = root_;
-    Node<KeyTy> *candidate = &end_;
+    Node<KeyTy> *candidate = nullptr;
 
     while (current) {
       if (current->key >= key) {
@@ -94,12 +66,12 @@ public:
       }
     }
 
-    return Iterator(candidate);
+    return candidate;
   }
 
-  Iterator upperBound(const KeyTy &key) {
+  Node<KeyTy> *upperBound(const KeyTy &key) {
     Node<KeyTy> *current = root_;
-    Node<KeyTy> *candidate = &end_;
+    Node<KeyTy> *candidate = nullptr;
 
     while (current) {
       if (key < current->key) {
@@ -110,11 +82,11 @@ public:
       }
     }
 
-    return Iterator(candidate);
+    return candidate;
   }
 
   size_t getRank(Node<KeyTy> *node) const {
-    if (!node || node == &end_ || !root_)
+    if (!root_ || !node)
       return 0;
 
     size_t rank = (node->left ? node->left->subtree_size : 0);
@@ -131,21 +103,18 @@ public:
     return rank;
   }
 
-  size_t distance(Iterator first, Iterator last) const {
-    if (!root_ || first.ptr == nullptr || last.ptr == nullptr)
+  size_t distance(Node<KeyTy> *first, Node<KeyTy> *last) const {
+    if (!root_ || !first)
       return 0;
 
-    if (first.ptr == &end_ && last.ptr == &end_)
+    if (first == last)
       return 0;
 
-    if (first.ptr == &end_)
-      return 0;
+    if (!last)
+      return root_->subtree_size - getRank(first);
 
-    if (last.ptr == &end_)
-      return root_->subtree_size - getRank(first.ptr);
-
-    size_t r1 = getRank(first.ptr);
-    size_t r2 = getRank(last.ptr);
+    size_t r1 = getRank(first);
+    size_t r2 = getRank(last);
 
     return (r2 >= r1) ? (r2 - r1) : 0;
   }
@@ -153,8 +122,7 @@ public:
 
 template <typename KeyTy> void Tree<KeyTy>::insert(const KeyTy &key) {
   if (!root_) {
-    root_ = new Node<KeyTy>(key, &end_);
-    end_.left = root_;
+    root_ = new Node<KeyTy>(key, nullptr);
     root_->color = Color::black;
     root_->subtree_size = 1;
     return;
@@ -184,24 +152,18 @@ template <typename KeyTy> void Tree<KeyTy>::insert(const KeyTy &key) {
 
   // Updating the sizes for all nodes.
   auto temp = new_node ? new_node->parent : parent;
-  while (temp && temp != &end_) {
+  while (temp) {
     ++temp->subtree_size;
     temp = temp->parent;
   }
 
   // Balancing after insertion.
-  if (new_node) {
+  if (new_node)
     balanceTree(new_node);
-  }
 
   // Updating the root.
-  while (root_->parent != &end_)
+  while (root_->parent)
     root_ = root_->parent;
-
-  // Updating the maximum element.
-  end_.left = root_;
-  while (end_.left && end_.left->right)
-    end_.left = end_.left->right;
 }
 
 template <typename KeyTy> bool Tree<KeyTy>::verifyTree() const {
@@ -234,7 +196,7 @@ template <typename KeyTy> bool Tree<KeyTy>::verifyTree() const {
   }
 
   // Checking the correctness of parent links.
-  if (!checkParentLinks(root_, &end_)) {
+  if (!checkParentLinks(root_, nullptr)) {
     std::cerr << "Violation: Parent links are incorrect" << std::endl;
     return false;
   }
@@ -242,12 +204,6 @@ template <typename KeyTy> bool Tree<KeyTy>::verifyTree() const {
   // Checking the correctness of subtree_size.
   if (!checkSubtreeSizes(root_)) {
     std::cerr << "Violation: Subtree sizes are incorrect" << std::endl;
-    return false;
-  }
-
-  // Checking the end pointer.
-  if (!checkEndPointer()) {
-    std::cerr << "Violation: End pointer is incorrect" << std::endl;
     return false;
   }
 
@@ -355,23 +311,6 @@ bool Tree<KeyTy>::checkSubtreeSizes(Node<KeyTy> *node) const {
   return checkSubtreeSizes(node->left) && checkSubtreeSizes(node->right);
 }
 
-template <typename KeyTy> bool Tree<KeyTy>::checkEndPointer() const {
-  if (!root_)
-    return end_.left == nullptr;
-
-  Node<KeyTy> *max_node = root_;
-  while (max_node && max_node->right)
-    max_node = max_node->right;
-
-  if (end_.left != max_node) {
-    std::cerr << "End pointer violation: expected " << max_node->key << ", got "
-              << (end_.left ? end_.left->key : -1) << std::endl;
-    return false;
-  }
-
-  return true;
-}
-
 template <typename KeyTy> void Tree<KeyTy>::balanceTree(Node<KeyTy> *node) {
   while (node != root_ && node->parent->color == Color::red) {
     Node<KeyTy> *parent = node->parent;
@@ -444,11 +383,6 @@ template <typename KeyTy> void Tree<KeyTy>::balanceTree(Node<KeyTy> *node) {
   root_->color = Color::black;
 }
 
-template <typename KeyTy>
-inline std::size_t Tree<KeyTy>::getSize(Node<KeyTy> *node) const {
-  return node ? node->subtree_size : 0;
-}
-
 //     x                     y
 //    / \                   / \
 //   z   y       -->       x   c
@@ -466,7 +400,7 @@ template <typename KeyTy> void Tree<KeyTy>::rotateLeft(Node<KeyTy> *node) {
 
   right_child->parent = node->parent;
 
-  if (node->parent == &end_) {
+  if (!node->parent) {
     root_ = right_child;
   } else if (node == node->parent->left) {
     node->parent->left = right_child;
@@ -477,15 +411,15 @@ template <typename KeyTy> void Tree<KeyTy>::rotateLeft(Node<KeyTy> *node) {
   right_child->left = node;
   node->parent = right_child;
 
-  node->subtree_size = getSize(node->left) + getSize(node->right) + 1;
+  node->subtree_size = size(node->left) + size(node->right) + 1;
   right_child->subtree_size =
-      getSize(right_child->left) + getSize(right_child->right) + 1;
+      size(right_child->left) + size(right_child->right) + 1;
 }
 
 //       x                 y
 //      / \               / \
 //     y   z     -->     b   x
-//    / \                   / \ 
+//    / \                   / \
 //   b   c                 c   z
 template <typename KeyTy> void Tree<KeyTy>::rotateRight(Node<KeyTy> *node) {
   if (!node || !node->left)
@@ -499,7 +433,7 @@ template <typename KeyTy> void Tree<KeyTy>::rotateRight(Node<KeyTy> *node) {
 
   left_child->parent = node->parent;
 
-  if (node->parent == &end_) {
+  if (!node->parent) {
     root_ = left_child;
   } else if (node == node->parent->right) {
     node->parent->right = left_child;
@@ -510,27 +444,8 @@ template <typename KeyTy> void Tree<KeyTy>::rotateRight(Node<KeyTy> *node) {
   left_child->right = node;
   node->parent = left_child;
 
-  node->subtree_size = getSize(node->left) + getSize(node->right) + 1;
+  node->subtree_size = size(node->left) + size(node->right) + 1;
   left_child->subtree_size =
-      getSize(left_child->left) + getSize(left_child->right) + 1;
-}
-
-template <typename KeyTy>
-std::size_t Tree<KeyTy>::recalculateSize(Node<KeyTy> *node) {
-  if (!node)
-    return 0;
-
-  node->subtree_size =
-      1 + recalculateSize(node->left) + recalculateSize(node->right);
-  return node->subtree_size;
-}
-
-template <typename KeyTy> void Tree<KeyTy>::cleanTree(Node<KeyTy> *node) {
-  if (!node || node == &end_)
-    return;
-
-  cleanTree(node->left);
-  cleanTree(node->right);
-  delete node;
+      size(left_child->left) + size(left_child->right) + 1;
 }
 } // namespace RB_Tree
