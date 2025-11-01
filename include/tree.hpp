@@ -1,6 +1,7 @@
 #pragma once
 
 #include "node.hpp"
+#include <cstddef>
 #include <iostream>
 
 namespace RB_Tree {
@@ -27,6 +28,7 @@ private:
   std::size_t recalculateSize(Node<KeyTy> *node);
   void cleanTree(Node<KeyTy> *);
 
+  std::size_t inline getSize(Node<KeyTy> *node) const;
   void rotateLeft(Node<KeyTy> *node);
   void rotateRight(Node<KeyTy> *node);
   void balanceTree(Node<KeyTy> *node);
@@ -144,7 +146,7 @@ public:
 
     size_t r1 = getRank(first.ptr);
     size_t r2 = getRank(last.ptr);
-    
+
     return (r2 >= r1) ? (r2 - r1) : 0;
   }
 };
@@ -442,6 +444,16 @@ template <typename KeyTy> void Tree<KeyTy>::balanceTree(Node<KeyTy> *node) {
   root_->color = Color::black;
 }
 
+template <typename KeyTy>
+inline std::size_t Tree<KeyTy>::getSize(Node<KeyTy> *node) const {
+  return node ? node->subtree_size : 0;
+}
+
+//     x                     y
+//    / \                   / \
+//   z   y       -->       x   c
+//      / \               / \
+//     b   c             z   b
 template <typename KeyTy> void Tree<KeyTy>::rotateLeft(Node<KeyTy> *node) {
   if (!node || !node->right)
     return;
@@ -465,9 +477,16 @@ template <typename KeyTy> void Tree<KeyTy>::rotateLeft(Node<KeyTy> *node) {
   right_child->left = node;
   node->parent = right_child;
 
-  recalculateSize(node->parent);
+  node->subtree_size = getSize(node->left) + getSize(node->right) + 1;
+  right_child->subtree_size =
+      getSize(right_child->left) + getSize(right_child->right) + 1;
 }
 
+//       x                 y
+//      / \               / \
+//     y   z     -->     b   x
+//    / \                   / \ 
+//   b   c                 c   z
 template <typename KeyTy> void Tree<KeyTy>::rotateRight(Node<KeyTy> *node) {
   if (!node || !node->left)
     return;
@@ -491,7 +510,9 @@ template <typename KeyTy> void Tree<KeyTy>::rotateRight(Node<KeyTy> *node) {
   left_child->right = node;
   node->parent = left_child;
 
-  recalculateSize(node->parent);
+  node->subtree_size = getSize(node->left) + getSize(node->right) + 1;
+  left_child->subtree_size =
+      getSize(left_child->left) + getSize(left_child->right) + 1;
 }
 
 template <typename KeyTy>
