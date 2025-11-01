@@ -9,11 +9,11 @@ TEST(RB_Tree, InvalidInput) {
   tree.insert(2);
   tree.insert(5);
 
-  auto l = tree.lowerBound(6);
-  auto r = tree.upperBound(1);
+  auto lb = tree.lowerBound(6);
+  auto ub = tree.upperBound(1);
 
-  EXPECT_EQ(tree.distance(l, r), 0);
-  EXPECT_EQ(tree.distance(r, l), 2);
+  EXPECT_EQ(tree.distance(lb, ub), 0);
+  EXPECT_EQ(tree.distance(ub, lb), 2);
 }
 
 TEST(RB_Tree, NullTree) {
@@ -25,43 +25,43 @@ TEST(RB_Tree, NullTree) {
 TEST(RB_Tree, EmptyTree) {
   RB_Tree::Tree<KeyTy> tree;
 
-  auto l = tree.lowerBound(6);
-  auto r = tree.upperBound(1);
+  auto lb = tree.lowerBound(6);
+  auto ub = tree.upperBound(1);
 
-  EXPECT_EQ(tree.distance(l, r), 0);
-  EXPECT_EQ(tree.distance(r, l), 0);
+  EXPECT_EQ(tree.distance(lb, ub), 0);
+  EXPECT_EQ(tree.distance(ub, lb), 0);
 }
 
 TEST(RB_Tree, ZeroElements) {
   RB_Tree::Tree<KeyTy> tree1;
   tree1.insert(0);
-  auto l1 = tree1.lowerBound(1);
-  auto r1 = tree1.upperBound(9);
-  EXPECT_EQ(tree1.distance(l1, r1), 0);
-  EXPECT_EQ(tree1.distance(r1, l1), 0);
+  auto lb1 = tree1.lowerBound(1);
+  auto ub1 = tree1.upperBound(9);
+  EXPECT_EQ(tree1.distance(lb1, ub1), 0);
+  EXPECT_EQ(tree1.distance(ub1, lb1), 0);
 
   RB_Tree::Tree<KeyTy> tree2;
   tree2.insert(10);
-  auto l2 = tree2.lowerBound(1);
-  auto r2 = tree2.upperBound(9);
-  EXPECT_EQ(tree2.distance(l2, r2), 0);
-  EXPECT_EQ(tree2.distance(r2, l2), 0);
+  auto lb2 = tree2.lowerBound(1);
+  auto ub2 = tree2.upperBound(9);
+  EXPECT_EQ(tree2.distance(lb2, ub2), 0);
+  EXPECT_EQ(tree2.distance(ub2, lb2), 0);
 }
 
 TEST(RB_Tree, EdgeElement) {
   RB_Tree::Tree<KeyTy> tree1;
   tree1.insert(1);
-  auto l1 = tree1.lowerBound(1);
-  auto r1 = tree1.upperBound(9);
-  EXPECT_EQ(tree1.distance(l1, r1), 1);
-  EXPECT_EQ(tree1.distance(r1, l1), 0);
+  auto lb1 = tree1.lowerBound(1);
+  auto ub1 = tree1.upperBound(9);
+  EXPECT_EQ(tree1.distance(lb1, ub1), 1);
+  EXPECT_EQ(tree1.distance(ub1, lb1), 0);
 
   RB_Tree::Tree<KeyTy> tree2;
   tree2.insert(9);
-  auto l2 = tree2.lowerBound(1);
-  auto r2 = tree2.upperBound(9);
-  EXPECT_EQ(tree2.distance(l2, r2), 1);
-  EXPECT_EQ(tree2.distance(r2, l2), 0);
+  auto lb2 = tree2.lowerBound(1);
+  auto ub2 = tree2.upperBound(9);
+  EXPECT_EQ(tree2.distance(lb2, ub2), 1);
+  EXPECT_EQ(tree2.distance(ub2, lb2), 0);
 }
 
 TEST(RB_Tree, SingleInsert) {
@@ -146,137 +146,53 @@ TEST(RB_Tree, SubtreeSizeConsistency) {
   EXPECT_TRUE(tree.verifyTree());
 }
 
-TEST(RB_Tree, EndPointerConsistency) {
+TEST(RB_Tree, RangeQuery) {
   RB_Tree::Tree<KeyTy> tree;
-
-  tree.insert(5);
-  tree.insert(3);
-  tree.insert(7);
-
-  EXPECT_NE(tree.get_end().left, nullptr);
-  EXPECT_EQ(tree.get_end().left->key, 7);
-
-  tree.insert(10);
-  EXPECT_EQ(tree.get_end().left->key, 10);
-
-  tree.insert(8);
-  EXPECT_EQ(tree.get_end().left->key, 10);
-
-  EXPECT_TRUE(tree.verifyTree());
-}
-
-TEST(RBTreeIterator, EmptyTree) {
-  RB_Tree::Tree<KeyTy> tree;
-  EXPECT_TRUE(tree.begin() == tree.end());
-  EXPECT_EQ(tree.distance(tree.begin(), tree.end()), 0);
-}
-
-TEST(RBTreeIterator, SingleElement) {
-  RB_Tree::Tree<KeyTy> tree;
-  tree.insert(42);
-  ASSERT_TRUE(tree.verifyTree());
-
-  auto it = tree.begin();
-  EXPECT_NE(it, tree.end());
-  EXPECT_EQ(*it, 42);
-  ++it;
-  EXPECT_EQ(it, tree.end());
-
-  auto it2 = tree.end();
-  --it2;
-  EXPECT_EQ(*it2, 42);
-  EXPECT_EQ(it2, tree.begin());
-}
-
-TEST(RBTreeIterator, ForwardTraversal) {
-  RB_Tree::Tree<KeyTy> tree;
-  std::vector<int> keys = {5, 3, 7, 2, 4, 6, 8};
-  for (int k : keys)
-    tree.insert(k);
-  ASSERT_TRUE(tree.verifyTree());
-
-  std::vector<int> expected = {2, 3, 4, 5, 6, 7, 8};
-  std::vector<int> actual;
-  for (auto it = tree.begin(); it != tree.end(); ++it) {
-    actual.push_back(*it);
-  }
-  EXPECT_EQ(actual, expected);
-}
-
-TEST(RBTreeIterator, ReverseTraversal) {
-  RB_Tree::Tree<KeyTy> tree;
-
-  std::vector<int> keys = {5, 3, 7, 2, 4, 6, 8};
-  for (int k : keys)
-    tree.insert(k);
-  ASSERT_TRUE(tree.verifyTree());
-
-  std::vector<int> expected = {8, 7, 6, 5, 4, 3, 2};
-  std::vector<int> actual;
-
-  auto it = tree.end();
-  while (it != tree.begin()) {
-    --it;
-    actual.push_back(*it);
-  }
-
-  EXPECT_EQ(actual, expected);
-}
-
-TEST(RBTreeIterator, IncrementOperators) {
-  RB_Tree::Tree<KeyTy> tree;
-  tree.insert(10);
-  tree.insert(20);
-
-  auto it1 = tree.begin();
-  auto it2 = ++it1;
-  EXPECT_EQ(*it1, 20);
-  EXPECT_EQ(*it2, 20);
-}
-
-TEST(RBTreeIterator, DecrementOperators) {
-  RB_Tree::Tree<KeyTy> tree;
-  tree.insert(10);
-  tree.insert(20);
-
-  auto it1 = tree.end();
-  auto it2 = --it1;
-  EXPECT_EQ(*it1, 20);
-  EXPECT_EQ(*it2, 20);
-}
-
-TEST(RBTreeIterator, RangeQuery) {
-  RB_Tree::Tree<KeyTy> tree;
-
   for (int i = 1; i <= 10; ++i)
     tree.insert(i);
+  ASSERT_TRUE(tree.verifyTree());
 
   auto l = tree.lowerBound(3);
   auto r = tree.upperBound(7);
 
-  std::vector<int> expected = {3, 4, 5, 6, 7};
-  std::vector<int> actual;
-
-  for (auto it = l; it != r; ++it)
-    actual.push_back(*it);
-
-  EXPECT_EQ(actual, expected);
   EXPECT_EQ(tree.distance(l, r), 5);
+  EXPECT_EQ(tree.distance(tree.lowerBound(1), tree.upperBound(10)), 10);
+  EXPECT_EQ(tree.distance(tree.lowerBound(5), tree.upperBound(5)), 1);
 }
 
-TEST(RBTreeIterator, LargeTreeTraversal) {
+TEST(RB_Tree, Bounds) {
+  RB_Tree::Tree<KeyTy> tree;
+  std::vector<int> keys = {2, 4, 6, 8};
+  for (int k : keys)
+    tree.insert(k);
+  ASSERT_TRUE(tree.verifyTree());
+
+  auto lb = tree.lowerBound(5);
+  ASSERT_NE(lb, nullptr);
+  EXPECT_EQ(lb->key, 6);
+
+  auto ub = tree.upperBound(5);
+  ASSERT_NE(ub, nullptr);
+  EXPECT_EQ(ub->key, 6);
+
+  EXPECT_EQ(tree.upperBound(8), nullptr);
+  EXPECT_EQ(tree.lowerBound(10), nullptr);
+}
+
+TEST(RB_Tree, LargeTree) {
   RB_Tree::Tree<KeyTy> tree;
   const int N = 1000;
-  for (int i = N; i >= 1; --i)
+  for (int i = 1; i <= N; ++i)
     tree.insert(i);
   ASSERT_TRUE(tree.verifyTree());
 
-  int count = 0;
-  int expected = 1;
-  for (auto it = tree.begin(); it != tree.end(); ++it, ++count) {
-    EXPECT_EQ(*it, expected++);
-  }
-  EXPECT_EQ(count, N);
+  EXPECT_EQ(tree.distance(tree.lowerBound(1), tree.upperBound(N)), N);
+  EXPECT_EQ(tree.distance(tree.lowerBound(N + 1), tree.upperBound(N + 10)), 0);
+
+  auto last = tree.lowerBound(N);
+  ASSERT_NE(last, nullptr);
+  EXPECT_EQ(last->key, N);
+  EXPECT_EQ(tree.getRank(last), N - 1);
 }
 
 int main(int argc, char **argv) {

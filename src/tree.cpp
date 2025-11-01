@@ -46,8 +46,8 @@ int main() {
 
       std::size_t distance = 0;
       if (second > first) {
-        Tree<KeyTy>::Iterator start = tree.lowerBound(first);
-        Tree<KeyTy>::Iterator fin = tree.upperBound(second);
+        Node<KeyTy> *start = tree.lowerBound(first);
+        Node<KeyTy> *fin = tree.upperBound(second);
         distance = tree.distance(start, fin);
       }
 
