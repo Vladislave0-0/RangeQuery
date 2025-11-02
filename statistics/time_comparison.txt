@@ -1,19 +1,19 @@
 ==========RB_TREE==========
 test1: 0.000 s
-test2: 0.005 s
-test3: 0.019 s
-test4: 0.038 s
-test5: 0.076 s
-test6: 0.176 s
-test7: 0.383 s
-test8: 0.845 s
+test2: 0.006 s
+test3: 0.017 s
+test4: 0.040 s
+test5: 0.072 s
+test6: 0.195 s
+test7: 0.359 s
+test8: 0.765 s
 
 ============SET============
 test1: 0.000 s
-test2: 0.033 s
-test3: 0.175 s
-test4: 0.940 s
-test5: 5.087 s
-test6: 38.034 s
-test7: 158.037 s
-test8: 890.059 s
+test2: 0.065 s
+test3: 0.200 s
+test4: 1.098 s
+test5: 5.122 s
+test6: 38.778 s
+test7: 154.337 s
+test8: 860.611 s

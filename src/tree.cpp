@@ -14,6 +14,8 @@ using namespace RB_Tree;
 int main() {
   using KeyTy = int;
 
+  volatile std::size_t benchmark_sink = 0;
+
   char command = 0;
   int first = 0, second = 0;
 
@@ -51,9 +53,11 @@ int main() {
         distance = tree.distance(start, fin);
       }
 
-#ifndef BENCHMARK
+#ifdef BENCHMARK
+      benchmark_sink = distance;
+#else
       std::cout << distance << " ";
-#endif // BENCHMARK
+#endif
 
       command = 0;
       break;
