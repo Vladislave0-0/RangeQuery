@@ -7,8 +7,6 @@
 #endif // TIME
 
 int main() {
-  using KeyTy = int;
-
   volatile std::size_t benchmark_sink = 0;
 
   char command = 0;

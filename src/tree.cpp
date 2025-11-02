@@ -1,7 +1,5 @@
 #include "../include/tree.hpp"
 
-using namespace RB_Tree;
-
 #ifdef TIME
 #include <chrono>
 #endif // TIME
@@ -48,8 +46,8 @@ int main() {
 
       std::size_t distance = 0;
       if (second > first) {
-        Node<KeyTy> *start = tree.lowerBound(first);
-        Node<KeyTy> *fin = tree.upperBound(second);
+        RB_Tree::Node<KeyTy> *start = tree.lowerBound(first);
+        RB_Tree::Node<KeyTy> *fin = tree.upperBound(second);
         distance = tree.distance(start, fin);
       }
 
