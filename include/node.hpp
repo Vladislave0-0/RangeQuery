@@ -3,9 +3,8 @@
 #include <cstddef>
 
 namespace RB_Tree {
+  
 enum class Color { red, black };
-
-template <typename KeyTy> class Tree;
 
 template <typename KeyTy = int> struct Node final {
   KeyTy key;

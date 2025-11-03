@@ -1,4 +1,5 @@
 #include "../include/tree.hpp"
+#include <iostream>
 
 #ifdef TIME
 #include <chrono>
