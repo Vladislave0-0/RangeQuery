@@ -1,94 +1,96 @@
-#pragma once
+// #pragma once
 
-#include <fstream>
-#include <iostream>
+// #include <fstream>
+// #include <iostream>
+// #include <string>
 
-#include "node.hpp"
+// #include "node.hpp"
 
-namespace RB_Tree {
+// namespace RB_Tree {
 
-namespace {
-std::string RED = "\x1B[31m";
-std::string GRN = "\x1B[32m";
-std::string YEL = "\x1B[33m";
-std::string BLU = "\x1B[34m";
-std::string MAG = "\x1B[35m";
-std::string CYN = "\x1B[36m";
-std::string WHT = "\x1B[37m";
-std::string RST = "\x1B[0m";
-}; // namespace
+// template <typename KeyTy> class Tree;
 
-template <typename KeyTy>
-void dumpTree(std::ostream &os, RB_Tree::Node<KeyTy> *node) {
-  static size_t null_nodes = 0;
+// namespace {
+// constexpr const char *RED = "\x1B[31m";
+// constexpr const char *RST = "\x1B[0m";
+// } // namespace
 
-  std::string node_color =
-      node->color == RB_Tree::Color::black ? "black" : "red";
-  std::string line_color =
-      node->color == RB_Tree::Color::black ? "red" : "black";
-  std::string fontcolor =
-      node->color == RB_Tree::Color::black ? "white" : "black";
+// template <typename KeyTy>
+// void dumpTree(
+//     std::ostream &os,
+//     const std::optional<typename std::list<Node<KeyTy>>::iterator> &node_opt,
+//     size_t &null_counter) {
+//   if (!node_opt)
+//     return;
 
-  os << "\tnode_" << node << " [color = " << line_color
-     << ", style = \"filled\", fillcolor = " << node_color
-     << ", shape = Mrecord, fontcolor = " << fontcolor << ", label =  \"{{<f1> "
-     << node << "} | { <f2> size: " << node->subtree_size
-     << " | <f3> key = " << node->key << "}}\"];\n";
+//   const Node<KeyTy> &node = **node_opt;
+//   const void *node_addr = static_cast<const void *>(&node);
 
-  if (node->left) {
-    os << "\tnode_" << node << ":<f2>:s -> node_" << node->left << ":<f1>:n;\n";
-    dumpTree(os, node->left);
-  } else {
-    os << "\tnode_" << node << ":<f2>:s -> node_" << null_nodes << ":<f1>:n;\n";
+//   std::string node_color = (node.color == Color::black) ? "black" : "red";
+//   std::string line_color = (node.color == Color::black) ? "red" : "black";
+//   std::string fontcolor = (node.color == Color::black) ? "white" : "black";
 
-    os << "\tnode_" << null_nodes
-       << " [color = red, style = \"filled\", fillcolor = black, shape = "
-          "Mrecord, fontcolor = white, label =  \"{<f1> NULL}\"];\n";
+//   os << "\tnode_" << node_addr << " [color = " << line_color
+//      << ", style = \"filled\", fillcolor = " << node_color
+//      << ", shape = Mrecord, fontcolor = " << fontcolor << ", label = \"{{<f1> "
+//      << node_addr << "} | {<f2> size: " << node.subtree_size
+//      << " | <f3> key = " << node.key << "}}\"];\n";
 
-    ++null_nodes;
-  }
+//   // Left child
+//   if (node.left) {
+//     const void *left_addr = static_cast<const void *>(&(**node.left));
+//     os << "\tnode_" << node_addr << ":<f2>:s -> node_" << left_addr
+//        << ":<f1>:n;\n";
+//     dumpTree<KeyTy>(os, node.left, null_counter); // ← явное указание KeyTy
+//   } else {
+//     os << "\tnode_" << node_addr << ":<f2>:s -> null_" << ++null_counter
+//        << ";\n";
+//     os << "\tnull_" << null_counter
+//        << " [color = red, style = \"filled\", fillcolor = black, "
+//        << "shape = Mrecord, fontcolor = white, label = \"{<f1> NULL}\"];\n";
+//   }
 
-  if (node->right) {
-    os << "\tnode_" << node << ":<f3>:s -> node_" << node->right
-       << ":<f1>:n;\n";
-    dumpTree(os, node->right);
-  } else {
-    os << "\tnode_" << node << ":<f3>:s -> node_" << null_nodes << ":<f1>:n;\n";
+//   // Right child
+//   if (node.right) {
+//     const void *right_addr = static_cast<const void *>(&(**node.right));
+//     os << "\tnode_" << node_addr << ":<f3>:s -> node_" << right_addr
+//        << ":<f1>:n;\n";
+//     dumpTree<KeyTy>(os, node.right, null_counter); // ← явное указание KeyTy
+//   } else {
+//     os << "\tnode_" << node_addr << ":<f3>:s -> null_" << ++null_counter
+//        << ";\n";
+//     os << "\tnull_" << null_counter
+//        << " [color = red, style = \"filled\", fillcolor = black, "
+//        << "shape = Mrecord, fontcolor = white, label = \"{<f1> NULL}\"];\n";
+//   }
+// }
 
-    os << "\tnode_" << null_nodes
-       << " [color = red, style = \"filled\", fillcolor = black, shape = "
-          "Mrecord, fontcolor = white, label =  \"{<f1> NULL}\"];\n";
+// template <typename KeyTy>
+// void makeGraph(const std::string &filename, const Tree<KeyTy> &tree) {
+//   auto root_opt = tree.get_root();
+//   if (!root_opt) {
+//     std::cout << RED
+//               << "[makeGraph error] Failed to make dump of the tree. Root is "
+//                  "nullptr.\n"
+//               << RST;
+//     return;
+//   }
 
-    ++null_nodes;
-  }
-}
+//   std::ofstream file(filename);
+//   if (!file.is_open()) {
+//     std::cerr << RED << "[makeGraph error] Failed to open file: " << filename
+//               << RST << std::endl;
+//     return;
+//   }
 
-template <typename KeyTy>
-void makeGraph(const std::string &filename, RB_Tree::Node<KeyTy> *node) {
-  if (node == nullptr) {
-    std::cout << RED
-              << "[makeGraph error] Failed to make dump of the tree. Root is "
-                 "nullptr.\n"
-              << RST;
-    return;
-  }
+//   file << "digraph tree {\n";
+//   file << "\trankdir = TB;\n";
+//   file << "\tsplines = false;\n\n";
 
-  std::ofstream file(filename);
-  if (!file.is_open()) {
-    std::cerr << RED << "[makeGraph error] Failed to open file: " << filename
-              << std::endl
-              << RST;
-    return;
-  }
+//   size_t null_counter = 0;
+//   dumpTree<KeyTy>(file, root_opt, null_counter);
 
-  file << "digraph tree\n";
-  file << "{\n";
-  file << "\trankdir = TB;\n";
-  file << "\tsplines = false;\n\n";
+//   file << "}\n";
+// }
 
-  if (node)
-    dumpTree(file, node);
-  
-  file << "}\n";
-}
-} // namespace RB_Tree
+// } // namespace RB_Tree

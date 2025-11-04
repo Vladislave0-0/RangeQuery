@@ -1,0 +1,15 @@
+==51073== Memcheck, a memory error detector
+==51073== Copyright (C) 2002-2022, and GNU GPL'd, by Julian Seward et al.
+==51073== Using Valgrind-3.22.0 and LibVEX; rerun with -h for copyright info
+==51073== Command: ./google_test
+==51073== Parent PID: 5991
+==51073== 
+==51073== 
+==51073== HEAP SUMMARY:
+==51073==     in use at exit: 0 bytes in 0 blocks
+==51073==   total heap usage: 581 allocs, 581 frees, 149,795 bytes allocated
+==51073== 
+==51073== All heap blocks were freed -- no leaks are possible
+==51073== 
+==51073== For lists of detected and suppressed errors, rerun with: -s
+==51073== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)

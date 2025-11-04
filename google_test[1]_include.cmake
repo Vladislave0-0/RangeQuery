@@ -1,0 +1,5 @@
+if(EXISTS "/home/vlad/Documents/YLab/03_RangeQuery/google_test[1]_tests.cmake")
+  include("/home/vlad/Documents/YLab/03_RangeQuery/google_test[1]_tests.cmake")
+else()
+  add_test(google_test_NOT_BUILT google_test_NOT_BUILT)
+endif()
