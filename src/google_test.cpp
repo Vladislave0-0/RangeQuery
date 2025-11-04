@@ -181,22 +181,21 @@ TEST(RB_Tree, Bounds) {
   EXPECT_EQ(tree.lowerBound(10), std::nullopt);
 }
 
-// TEST(RB_Tree, LargeTree) {
-//   RB_Tree::Tree<KeyTy> tree;
-//   const int N = 1000;
-//   for (int i = 1; i <= N; ++i)
-//     tree.insert(i);
-//   ASSERT_TRUE(tree.verifyTree());
+TEST(RB_Tree, LargeTree) {
+  RB_Tree::Tree<KeyTy> tree;
+  const int N = 1000;
+  for (int i = 1; i <= N; ++i)
+    tree.insert(i);
+  ASSERT_TRUE(tree.verifyTree());
 
-//   EXPECT_EQ(tree.distance(tree.lowerBound(1), tree.upperBound(N)), N);
-//   EXPECT_EQ(tree.distance(tree.lowerBound(N + 1), tree.upperBound(N + 10)),
-//   0);
+  EXPECT_EQ(tree.distance(tree.lowerBound(1), tree.upperBound(N)), N);
+  EXPECT_EQ(tree.distance(tree.lowerBound(N + 1), tree.upperBound(N + 10)), 0);
 
-//   auto last = tree.lowerBound(N);
-//   ASSERT_NE(last, nullptr);
-//   EXPECT_EQ((*last)->key, N);
-//   EXPECT_EQ(tree.getRank(last), N - 1);
-// }
+  auto last = tree.lowerBound(N);
+  ASSERT_NE(last, std::nullopt);
+  EXPECT_EQ((*last)->key, N);
+  EXPECT_EQ(tree.getRank(last), N - 1);
+}
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
