@@ -1,9 +1,6 @@
 #pragma once
 
 #include "node.hpp"
-// #include <iostream>
-#include <optional>
-// #include <stack>
 
 namespace RB_Tree {
 template <typename KeyTy = int> class Tree final {
@@ -14,16 +11,17 @@ template <typename KeyTy = int> class Tree final {
   std::list<NodeTy> nodes_;
 
 public:
-  Tree() { nodes_.clear(); }
-  ~Tree() { nodes_.clear(); };
+  Tree() = default;
+  ~Tree() = default;
 
   Tree(const Tree &) = delete;
   Tree &operator=(const Tree &) = delete;
-  Tree(Tree &&) = delete;
-  Tree &operator=(Tree &&) = delete;
+  Tree(Tree &&) = default;
+  Tree &operator=(Tree &&) = default;
 
   auto get_root() const { return root_; }
-  auto get_nodes() { return nodes_; }
+  auto get_nodes() const { return nodes_; }
+  bool verifyTree() const;
 
   void insert(const KeyTy &key);
   std::optional<It> lowerBound(const KeyTy &key) const;
@@ -31,7 +29,6 @@ public:
   std::size_t getRank(std::optional<It> node_opt) const;
   std::size_t distance(std::optional<It> first_opt,
                        std::optional<It> last_opt) const;
-  bool verifyTree() const;
 
 private:
   void rotateLeft(It node);
@@ -58,11 +55,12 @@ Tree<KeyTy>::lowerBound(const KeyTy &key) const {
   std::optional<It> candidate;
 
   while (current) {
-    if ((*(*current)).key >= key) {
+    auto &node = **current;
+    if (node.key >= key) {
       candidate = current;
-      current = (*(*current)).left;
+      current = node.left;
     } else {
-      current = (*(*current)).right;
+      current = node.right;
     }
   }
 
@@ -79,18 +77,18 @@ Tree<KeyTy>::upperBound(const KeyTy &key) const {
   std::optional<It> candidate;
 
   while (current) {
-    if (key < (*(*current)).key) {
+    auto &node = **current;
+    if (key < node.key) {
       candidate = current;
-      current = (*(*current)).left;
+      current = node.left;
     } else {
-      current = (*(*current)).right;
+      current = node.right;
     }
   }
 
   return candidate;
 }
 
-// === Подсчёт ранга (позиции узла в порядке возрастания) ===
 template <typename KeyTy>
 std::size_t
 Tree<KeyTy>::getRank(std::optional<typename Tree<KeyTy>::It> node_opt) const {
@@ -98,17 +96,17 @@ Tree<KeyTy>::getRank(std::optional<typename Tree<KeyTy>::It> node_opt) const {
     return 0;
 
   auto node = *node_opt;
-  std::size_t rank = size<KeyTy>((*node).left);
+  std::size_t rank = size<KeyTy>(node->left);
   auto current = node;
 
   while (true) {
-    auto parent_opt = (*current).parent;
+    auto parent_opt = current->parent;
     if (!parent_opt)
       break;
 
     auto parent = *parent_opt;
-    if (current == *(*parent).right)
-      rank += 1 + size<KeyTy>((*parent).left);
+    if (current == parent->right)
+      rank += 1 + size<KeyTy>(parent->left);
 
     current = parent;
   }
@@ -116,7 +114,6 @@ Tree<KeyTy>::getRank(std::optional<typename Tree<KeyTy>::It> node_opt) const {
   return rank;
 }
 
-// === Расстояние между двумя итераторами ===
 template <typename KeyTy>
 std::size_t
 Tree<KeyTy>::distance(std::optional<typename Tree<KeyTy>::It> first_opt,
@@ -128,7 +125,7 @@ Tree<KeyTy>::distance(std::optional<typename Tree<KeyTy>::It> first_opt,
     return 0;
 
   if (!last_opt)
-    return (*(*root_)).subtree_size - getRank(first_opt);
+    return (*root_)->subtree_size - getRank(first_opt);
 
   std::size_t r1 = getRank(first_opt);
   std::size_t r2 = getRank(last_opt);
@@ -149,14 +146,16 @@ template <typename KeyTy> void Tree<KeyTy>::insert(const KeyTy &key) {
 
   while (true) {
     parent = current;
-    if (key < (*current).key) {
-      if ((*current).left)
-        current = *(*current).left;
+    auto &current_node = *current;
+
+    if (key < current_node.key) {
+      if (current_node.left)
+        current = *current_node.left;
       else
         break;
-    } else if (key > (*current).key) {
-      if ((*current).right)
-        current = *(*current).right;
+    } else if (key > current_node.key) {
+      if (current_node.right)
+        current = *current_node.right;
       else
         break;
     } else {
@@ -166,84 +165,107 @@ template <typename KeyTy> void Tree<KeyTy>::insert(const KeyTy &key) {
 
   nodes_.emplace_back(key);
   It new_node = std::prev(nodes_.end());
-  (*new_node).parent = parent;
+  new_node->parent = parent;
 
-  if (key < (*(*parent)).key)
-    (*(*parent)).left = new_node;
+  auto &parent_node = **parent;
+  if (key < parent_node.key)
+    parent_node.left = new_node;
   else
-    (*(*parent)).right = new_node;
+    parent_node.right = new_node;
 
-  // Обновляем размеры
+  // Updating the sizes for all nodes.
   auto tmp = parent;
   while (tmp) {
-    ++(*(*tmp)).subtree_size;
-    tmp = (*(*tmp)).parent;
+    auto &tmp_node = **tmp;
+    ++tmp_node.subtree_size;
+    tmp = tmp_node.parent;
   }
 
+  // Balancing after insertion.
   balanceTree(new_node);
-  (*(*root_)).color = Color::black;
+
+  // Updating the root.
+  (*root_)->color = Color::black;
 }
 
 template <typename KeyTy> void Tree<KeyTy>::balanceTree(It node) {
   while (true) {
-    auto parent_opt = (*node).parent;
+    // Get the parent of the current node.
+    auto parent_opt = node->parent;
+
+    // If a node does not have a parent, it means that it is the root, and
+    // balancing is completed.
     if (!parent_opt)
       break;
-    auto parent = *parent_opt;
 
-    if ((*parent).color != Color::red)
+    auto parent = *parent_opt;
+    // If the parent is black, the tree is already balanced for that node.
+    if (parent->color != Color::red)
       break;
 
-    auto grandparent_opt = (*parent).parent;
+    // Getting a grandparent.
+    auto grandparent_opt = parent->parent;
+
+    // If there is no grandparent, the tree is balanced.
     if (!grandparent_opt)
       break;
 
     auto grandparent = *grandparent_opt;
-    bool parent_is_left =
-        ((*grandparent).left && *(*grandparent).left == parent);
+    // We determine whether the parent is the left descendant of the
+    // grandfather.
+    bool parent_is_left = (grandparent->left && *grandparent->left == parent);
 
-    auto uncle_opt =
-        parent_is_left ? (*grandparent).right : (*grandparent).left;
+    // We determine the uncle (the parent's brother) based on whether the parent
+    // is on the left.
+    auto uncle_opt = parent_is_left ? grandparent->right : grandparent->left;
 
-    // --- Case 1: Uncle is red ---
-    if (uncle_opt && (*(*uncle_opt)).color == Color::red) {
-      (*parent).color = Color::black;
-      (*(*uncle_opt)).color = Color::black;
-      (*grandparent).color = Color::red;
+    // Case 1: Uncle is Red.
+    if (uncle_opt && (*uncle_opt)->color == Color::red) {
+      parent->color = Color::black;
+      (*uncle_opt)->color = Color::black;
+      grandparent->color = Color::red;
       node = grandparent;
       continue;
     }
 
-    // --- Case 2 + 3: Uncle is black or null ---
+    // Uncle is black or null.
     if (parent_is_left) {
-      if ((*parent).right && *(*parent).right == node) {
+      // Case 2: Uncle is black and the node is right.
+      if (parent->right && *parent->right == node) {
         node = parent;
         rotateLeft(node);
-        parent_opt = (*node).parent;
+
+        // Updating the parent after the rotation.
+        parent_opt = node->parent;
         if (!parent_opt)
           break;
         parent = *parent_opt;
       }
-      (*parent).color = Color::black;
-      (*grandparent).color = Color::red;
+
+      parent->color = Color::black;
+      grandparent->color = Color::red;
       rotateRight(grandparent);
     } else {
-      if ((*parent).left && *(*parent).left == node) {
+      // Case 3: Uncle is black and node is left.
+      if (parent->left && *parent->left == node) {
         node = parent;
         rotateRight(node);
-        parent_opt = (*node).parent;
+
+        // Updating the parent after the rotation.
+        parent_opt = node->parent;
         if (!parent_opt)
           break;
         parent = *parent_opt;
       }
-      (*parent).color = Color::black;
-      (*grandparent).color = Color::red;
+
+      parent->color = Color::black;
+      grandparent->color = Color::red;
       rotateLeft(grandparent);
     }
   }
 
   if (root_)
-    (*(*root_)).color = Color::black;
+    (*root_)->color = Color::black;
 }
 
 //     x                     y
@@ -251,32 +273,36 @@ template <typename KeyTy> void Tree<KeyTy>::balanceTree(It node) {
 //   z   y       -->       x   c
 //      / \               / \
 //     b   c             z   b
-template <typename KeyTy> void Tree<KeyTy>::rotateLeft(It node) {
-  auto &n = *node;
-  if (!n.right)
+template <typename KeyTy> void Tree<KeyTy>::rotateLeft(It x_it) {
+  auto &x = *x_it;
+  if (!x.right)
     return;
 
-  It right_child = *n.right;
-  auto &r = *right_child;
+  It y_it = *x.right;
+  auto &y = *y_it;
 
-  n.right = r.left;
-  if (r.left)
-    (*(*r.left)).parent = node;
+  x.right = y.left;
+  if (y.left)
+    (*y.left)->parent = x_it;
 
-  r.parent = n.parent;
+  y.parent = x.parent;
 
-  if (!n.parent)
-    root_ = right_child;
-  else if (node == *(*n.parent)->left)
-    (*(*n.parent)).left = right_child;
-  else
-    (*(*n.parent)).right = right_child;
+  if (!x.parent) {
+    root_ = y_it;
+  } else {
+    auto parent_it = *x.parent;
+    auto &parent = *parent_it;
+    if (x_it == parent.left)
+      parent.left = y_it;
+    else
+      parent.right = y_it;
+  }
 
-  r.left = node;
-  n.parent = right_child;
+  y.left = x_it;
+  x.parent = y_it;
 
-  n.subtree_size = size<KeyTy>(n.left) + size<KeyTy>(n.right) + 1;
-  r.subtree_size = size<KeyTy>(r.left) + size<KeyTy>(r.right) + 1;
+  x.subtree_size = size<KeyTy>(x.left) + size<KeyTy>(x.right) + 1;
+  y.subtree_size = size<KeyTy>(y.left) + size<KeyTy>(y.right) + 1;
 }
 
 //       x                 y
@@ -284,31 +310,35 @@ template <typename KeyTy> void Tree<KeyTy>::rotateLeft(It node) {
 //     y   z     -->     b   x
 //    / \                   / \
 //   b   c                 c   z
-template <typename KeyTy> void Tree<KeyTy>::rotateRight(It node) {
-  auto &n = *node;
-  if (!n.left)
+template <typename KeyTy> void Tree<KeyTy>::rotateRight(It x_it) {
+  auto &x = *x_it;
+  if (!x.left)
     return;
 
-  It left_child = *n.left;
-  auto &l = *left_child;
+  It y_it = *x.left;
+  auto &y = *y_it;
 
-  n.left = l.right;
-  if (l.right)
-    (*(*l.right)).parent = node;
+  x.left = y.right;
+  if (y.right)
+    (*y.right)->parent = x_it;
 
-  l.parent = n.parent;
+  y.parent = x.parent;
 
-  if (!n.parent)
-    root_ = left_child;
-  else if (node == *(*n.parent)->right)
-    (*(*n.parent)).right = left_child;
-  else
-    (*(*n.parent)).left = left_child;
+  if (!x.parent) {
+    root_ = y_it;
+  } else {
+    auto parent_it = *x.parent;
+    auto &parent = *parent_it;
+    if (x_it == parent.right)
+      parent.right = y_it;
+    else
+      parent.left = y_it;
+  }
 
-  l.right = node;
-  n.parent = left_child;
+  y.right = x_it;
+  x.parent = y_it;
 
-  n.subtree_size = size<KeyTy>(n.left) + size<KeyTy>(n.right) + 1;
-  l.subtree_size = size<KeyTy>(l.left) + size<KeyTy>(l.right) + 1;
+  x.subtree_size = size<KeyTy>(x.left) + size<KeyTy>(x.right) + 1;
+  y.subtree_size = size<KeyTy>(y.left) + size<KeyTy>(y.right) + 1;
 }
 } // namespace RB_Tree

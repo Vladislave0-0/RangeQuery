@@ -24,5 +24,4 @@ template <typename KeyTy>
 inline std::size_t size(std::optional<typename Node<KeyTy>::It> node_opt) {
   return node_opt ? (*node_opt)->subtree_size : 0;
 }
-
 } // namespace RB_Tree

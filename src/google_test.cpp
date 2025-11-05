@@ -1,7 +1,5 @@
-#include "../include/tree.hpp"
 #include "../include/verify_tree.hpp"
 #include <gtest/gtest.h>
-#include <optional>
 
 using KeyTy = int;
 

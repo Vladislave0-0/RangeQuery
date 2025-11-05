@@ -1,1 +1,0 @@
-/usr/bin/c++ -g CMakeFiles/google_test.dir/src/google_test.cpp.o -o google_test  /usr/lib/x86_64-linux-gnu/libgtest_main.a /usr/lib/x86_64-linux-gnu/libgtest.a 
