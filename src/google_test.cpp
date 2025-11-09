@@ -195,6 +195,139 @@ TEST(RB_Tree, LargeTree) {
   EXPECT_EQ(tree.getRank(last), N - 1);
 }
 
+//==============================================================================
+
+class TreeMoveTest : public ::testing::Test {
+protected:
+  void SetUp() override {
+    tree1.insert(10);
+    tree1.insert(5);
+    tree1.insert(15);
+    tree1.insert(3);
+    tree1.insert(7);
+  }
+
+  RB_Tree::Tree<int> tree1;
+};
+
+TEST_F(TreeMoveTest, MoveConstructor) {
+  // Проверяем, что исходное дерево не пустое.
+  EXPECT_TRUE(tree1.get_root().has_value());
+  EXPECT_GT(tree1.get_nodes().size(), 0);
+
+  // Сохраняем информацию о дереве.
+  auto original_size = tree1.get_nodes().size();
+  auto root_key = (*tree1.get_root())->key;
+
+  // Перемещаем.
+  RB_Tree::Tree<int> tree2 = std::move(tree1);
+
+  // Проверяем, что новое дерево содержит те же данные.
+  EXPECT_TRUE(tree2.get_root().has_value());
+  EXPECT_EQ((*tree2.get_root())->key, root_key);
+  EXPECT_EQ(tree2.get_nodes().size(), original_size);
+
+  // Проверяем, что дерево остается валидным.
+  EXPECT_TRUE(tree2.verifyTree());
+
+  // Проверяем, что исходное дерево стало пустым и валидным.
+  EXPECT_FALSE(tree1.get_root().has_value());
+  EXPECT_EQ(tree1.get_nodes().size(), 0);
+  EXPECT_TRUE(tree1.verifyTree());
+}
+
+TEST_F(TreeMoveTest, MoveAssignment) {
+  RB_Tree::Tree<int> tree2;
+  tree2.insert(20);
+  tree2.insert(25);
+
+  auto tree2_original_size = tree2.get_nodes().size();
+  auto tree1_original_size = tree1.get_nodes().size();
+  auto tree1_root_key = (*tree1.get_root())->key;
+
+  // Перемещаем присваиванием.
+  tree2 = std::move(tree1);
+
+  // Проверяем, что tree2 теперь содержит данные из tree1.
+  EXPECT_TRUE(tree2.get_root().has_value());
+  EXPECT_EQ((*tree2.get_root())->key, tree1_root_key);
+  EXPECT_EQ(tree2.get_nodes().size(), tree1_original_size);
+
+  // Проверяем, что дерево валидно.
+  EXPECT_TRUE(tree2.verifyTree());
+
+  // Проверяем, что tree1 стало пустым и валидным.
+  EXPECT_FALSE(tree1.get_root().has_value());
+  EXPECT_EQ(tree1.get_nodes().size(), 0);
+  EXPECT_TRUE(tree1.verifyTree());
+}
+
+TEST_F(TreeMoveTest, MoveToEmptyTree) {
+  RB_Tree::Tree<int> empty_tree;
+  empty_tree = std::move(tree1);
+
+  EXPECT_TRUE(empty_tree.get_root().has_value());
+  EXPECT_GT(empty_tree.get_nodes().size(), 0);
+  EXPECT_TRUE(empty_tree.verifyTree());
+
+  EXPECT_FALSE(tree1.get_root().has_value());
+  EXPECT_EQ(tree1.get_nodes().size(), 0);
+  EXPECT_TRUE(tree1.verifyTree());
+}
+
+TEST_F(TreeMoveTest, MoveEmptyTree) {
+  RB_Tree::Tree<int> empty_tree;
+  RB_Tree::Tree<int> moved_empty = std::move(empty_tree);
+
+  EXPECT_FALSE(moved_empty.get_root().has_value());
+  EXPECT_EQ(moved_empty.get_nodes().size(), 0);
+  EXPECT_TRUE(moved_empty.verifyTree());
+
+  EXPECT_FALSE(empty_tree.get_root().has_value());
+  EXPECT_EQ(empty_tree.get_nodes().size(), 0);
+  EXPECT_TRUE(empty_tree.verifyTree());
+}
+
+TEST_F(TreeMoveTest, SelfMoveAssignment) {
+  // Сохраняем исходное состояние.
+  auto original_root = tree1.get_root();
+  auto original_size = tree1.get_nodes().size();
+
+  // Делаем самоприсваивание.
+  tree1 = std::move(tree1);
+
+  // Проверяем, что дерево валидно.
+  EXPECT_TRUE(tree1.get_root().has_value());
+  EXPECT_EQ(tree1.get_nodes().size(), original_size);
+  EXPECT_TRUE(tree1.verifyTree());
+}
+
+TEST_F(TreeMoveTest, MixedUsagePatterns) {
+  // Перемещение во временном выражении.
+  auto make_tree = []() {
+    RB_Tree::Tree<int> tree;
+    tree.insert(1);
+    tree.insert(2);
+    return tree;
+  };
+
+  auto nodes = make_tree().get_nodes();
+  EXPECT_EQ(nodes.size(), 2);
+
+  // Сохранение копии и оригинала.
+  RB_Tree::Tree<int> tree3;
+  tree3.insert(42);
+
+  auto nodes_copy = tree3.get_nodes(); // копия
+  EXPECT_FALSE(nodes_copy.empty());
+  EXPECT_TRUE(tree3.verifyTree()); // оригинал остается валидным
+
+  auto nodes_moved = std::move(tree3).get_nodes(); // перемещение
+  EXPECT_TRUE(tree3.get_root().has_value());
+  EXPECT_TRUE(tree3.get_nodes().empty());
+  EXPECT_FALSE(tree3.verifyTree()); // оригинал невалиден
+}
+
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

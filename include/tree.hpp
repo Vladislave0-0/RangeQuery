@@ -16,11 +16,25 @@ public:
 
   Tree(const Tree &) = delete;
   Tree &operator=(const Tree &) = delete;
-  Tree(Tree &&) = default;
-  Tree &operator=(Tree &&) = default;
+
+  Tree(Tree &&other)
+      : root_(std::move(other.root_)), nodes_(std::move(other.nodes_)) {
+    other.root_ = std::nullopt;
+  }
+
+  Tree &operator=(Tree &&other) {
+    if (this != &other) {
+      root_ = std::move(other.root_);
+      nodes_ = std::move(other.nodes_);
+      other.root_ = std::nullopt;
+    }
+
+    return *this;
+  }
 
   auto get_root() const { return root_; }
-  auto get_nodes() const { return nodes_; }
+  const std::list<NodeTy> &get_nodes() const & { return nodes_; }
+  std::list<NodeTy> &&get_nodes() && { return std::move(nodes_); }
   bool verifyTree() const;
 
   void insert(const KeyTy &key);

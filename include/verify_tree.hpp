@@ -7,6 +7,18 @@ template <typename KeyTy> bool Tree<KeyTy>::verifyTree() const {
   if (!root_)
     return true;
 
+  if (!root_.has_value() && !nodes_.empty()) {
+    std::cerr << "Violation: list with nodes is not empty but root is null."
+              << std::endl;
+    return false;
+  }
+
+  if (root_.has_value() && nodes_.empty()) {
+    std::cerr << "Violation: root is set but list with nodes is empty."
+              << std::endl;
+    return false;
+  }
+
   // The root must be black.
   if ((*root_)->color != Color::black) {
     std::cerr << "Violation: Root is not black." << std::endl;
